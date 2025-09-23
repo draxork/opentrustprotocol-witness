@@ -545,6 +545,11 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
     try {
       const stats = await this.getOraclePerformanceStats(oracleId);
       
+      if (!stats) {
+        console.warn(`No stats available for oracle ${oracleId}`);
+        return;
+      }
+      
       await client.query(`
         INSERT INTO oracle_stats (
           oracle_id, total_judgments, successful_judgments,

@@ -11,13 +11,17 @@ import { OracleConfig, NeutrosophicJudgment, OutcomeJudgment, OutcomeType } from
 
 // Mock opentrustprotocol
 jest.mock('opentrustprotocol', () => ({
-  NeutrosophicJudgment: jest.fn().mockImplementation((t, i, f, provenance, judgmentId) => ({
-    t, i, f, provenance_chain: provenance || [], judgment_id: judgmentId
+  NeutrosophicJudgment: jest.fn().mockImplementation((T, I, F, provenance, judgmentId) => ({
+    T, I, F, provenance_chain: provenance || [], judgment_id: judgmentId,
+    validate: jest.fn(),
+    toJSON: jest.fn(() => ({ T, I, F, provenance_chain: provenance || [] })),
+    toString: jest.fn(() => `NeutrosophicJudgment(T=${T}, I=${I}, F=${F})`),
+    equals: jest.fn(() => false)
   })),
-  OutcomeJudgment: jest.fn().mockImplementation((judgmentId, linksTo, t, i, f, outcomeType, oracleSource, provenance) => ({
+  OutcomeJudgment: jest.fn().mockImplementation((judgmentId, linksTo, T, I, F, outcomeType, oracleSource, provenance) => ({
     judgment_id: judgmentId,
     links_to_judgment_id: linksTo,
-    t, i, f,
+    T, I, F,
     outcome_type: outcomeType,
     oracle_source: oracleSource,
     provenance_chain: provenance || []
@@ -51,22 +55,26 @@ describe('Enhanced Oracle Integration Tests', () => {
     it('should record outcomes successfully', async () => {
       const decision: NeutrosophicJudgment = {
         judgment_id: 'decision-1',
-        t: 0.8,
-        i: 0.1,
-        f: 0.1,
+        T: 0.8,
+        I: 0.1,
+        F: 0.1,
         provenance_chain: [
           { source_id: 'test-mapper', timestamp: new Date().toISOString(), description: 'Test mapping' }
-        ]
-      };
+        ],
+        validate: jest.fn(),
+        toJSON: jest.fn(() => ({ T: 0.8, I: 0.1, F: 0.1, provenance_chain: [] })),
+        toString: jest.fn(() => 'NeutrosophicJudgment(T=0.8, I=0.1, F=0.1)'),
+        equals: jest.fn(() => false)
+      } as any;
 
       const outcome: OutcomeJudgment = {
         judgment_id: 'outcome-1',
         links_to_judgment_id: 'decision-1',
-        t: 1.0,
-        i: 0.0,
-        f: 0.0,
+        T: 1.0,
+        I: 0.0,
+        F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        // oracle_source: 'test-enhanced-oracle',
+        oracle_source: 'test-enhanced-oracle',
         provenance_chain: []
       };
 
@@ -77,20 +85,24 @@ describe('Enhanced Oracle Integration Tests', () => {
       // Record some test outcomes
       const decision: NeutrosophicJudgment = {
         judgment_id: 'decision-2',
-        t: 0.7,
-        i: 0.2,
-        f: 0.1,
-        provenance_chain: []
-      };
+        T: 0.7,
+        I: 0.2,
+        F: 0.1,
+        provenance_chain: [],
+        validate: jest.fn(),
+        toJSON: jest.fn(() => ({ T: 0.7, I: 0.2, F: 0.1, provenance_chain: [] })),
+        toString: jest.fn(() => 'NeutrosophicJudgment(T=0.7, I=0.2, F=0.1)'),
+        equals: jest.fn(() => false)
+      } as any;
 
       const outcome: OutcomeJudgment = {
         judgment_id: 'outcome-2',
         links_to_judgment_id: 'decision-2',
-        t: 1.0,
-        i: 0.0,
-        f: 0.0,
+        T: 1.0,
+        I: 0.0,
+        F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        // oracle_source: 'test-enhanced-oracle',
+        oracle_source: 'test-enhanced-oracle',
         provenance_chain: []
       };
 
@@ -131,10 +143,10 @@ describe('Enhanced Oracle Integration Tests', () => {
     it('should perform analytics analysis', async () => {
       // Record multiple outcomes for analysis
       const outcomes = [
-        { decision: { judgment_id: 'd1', t: 0.8, i: 0.1, f: 0.1, provenance_chain: [] }, 
-          outcome: { judgment_id: 'o1', links_to_judgment_id: 'd1', t: 1.0, i: 0.0, f: 0.0, outcome_type: OutcomeType.SUCCESS, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } },
-        { decision: { judgment_id: 'd2', t: 0.6, i: 0.2, f: 0.2, provenance_chain: [] }, 
-          outcome: { judgment_id: 'o2', links_to_judgment_id: 'd2', t: 0.0, i: 0.0, f: 1.0, outcome_type: OutcomeType.FAILURE, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } }
+        { decision: { judgment_id: 'd1', T: 0.8, I: 0.1, F: 0.1, provenance_chain: [], validate: jest.fn(), toJSON: jest.fn(), toString: jest.fn(), equals: jest.fn() } as any, 
+          outcome: { judgment_id: 'o1', links_to_judgment_id: 'd1', T: 1.0, I: 0.0, F: 0.0, outcome_type: OutcomeType.SUCCESS, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } },
+        { decision: { judgment_id: 'd2', T: 0.6, I: 0.2, F: 0.2, provenance_chain: [], validate: jest.fn(), toJSON: jest.fn(), toString: jest.fn(), equals: jest.fn() } as any, 
+          outcome: { judgment_id: 'o2', links_to_judgment_id: 'd2', T: 0.0, I: 0.0, F: 1.0, outcome_type: OutcomeType.FAILURE, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } }
       ];
 
       for (const { decision, outcome } of outcomes) {
@@ -291,39 +303,47 @@ describe('Performance Dashboard Integration Tests', () => {
       // Record outcomes in both oracles
       const decision1: NeutrosophicJudgment = {
         judgment_id: 'integration-decision-1',
-        t: 0.9,
-        i: 0.05,
-        f: 0.05,
-        provenance_chain: []
-      };
+        T: 0.9,
+        I: 0.05,
+        F: 0.05,
+        provenance_chain: [],
+        validate: jest.fn(),
+        toJSON: jest.fn(() => ({ T: 0.9, I: 0.05, F: 0.05, provenance_chain: [] })),
+        toString: jest.fn(() => 'NeutrosophicJudgment(T=0.9, I=0.05, F=0.05)'),
+        equals: jest.fn(() => false)
+      } as any;
 
       const outcome1: OutcomeJudgment = {
         judgment_id: 'integration-outcome-1',
         links_to_judgment_id: 'integration-decision-1',
-        t: 1.0,
-        i: 0.0,
-        f: 0.0,
+        T: 1.0,
+        I: 0.0,
+        F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        // oracle_source: 'dashboard-oracle-1',
+        oracle_source: 'dashboard-oracle-1',
         provenance_chain: []
       };
 
       const decision2: NeutrosophicJudgment = {
         judgment_id: 'integration-decision-2',
-        t: 0.7,
-        i: 0.2,
-        f: 0.1,
-        provenance_chain: []
-      };
+        T: 0.7,
+        I: 0.2,
+        F: 0.1,
+        provenance_chain: [],
+        validate: jest.fn(),
+        toJSON: jest.fn(() => ({ T: 0.7, I: 0.2, F: 0.1, provenance_chain: [] })),
+        toString: jest.fn(() => 'NeutrosophicJudgment(T=0.7, I=0.2, F=0.1)'),
+        equals: jest.fn(() => false)
+      } as any;
 
       const outcome2: OutcomeJudgment = {
         judgment_id: 'integration-outcome-2',
         links_to_judgment_id: 'integration-decision-2',
-        t: 0.0,
-        i: 0.0,
-        f: 1.0,
+        T: 0.0,
+        I: 0.0,
+        F: 1.0,
         outcome_type: OutcomeType.FAILURE,
-        // oracle_source: 'dashboard-oracle-2',
+        oracle_source: 'dashboard-oracle-2',
         provenance_chain: []
       };
 
