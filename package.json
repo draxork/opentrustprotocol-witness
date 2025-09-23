@@ -1,6 +1,6 @@
 {
   "name": "opentrustprotocol-oracle",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Performance Oracle & Analytics Engine for OpenTrust Protocol - Real-world outcome tracking and performance measurement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
