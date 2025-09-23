@@ -19,6 +19,7 @@ import jwt from 'jsonwebtoken';
 import { EnhancedOracle } from '../oracle/EnhancedOracle';
 import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
 import { PostgreSQLStorage } from '../storage/PostgreSQLStorage';
+import { OTPAnalyticsEngine } from '../analytics/OTPAnalyticsEngine';
 import { OracleConfig } from '../types/index';
 
 export interface APIConfig {
@@ -42,6 +43,7 @@ export class OracleAPIServer {
   private config: APIConfig;
   private storage: PostgreSQLStorage;
   private dashboard: PerformanceDashboard;
+  private analytics: OTPAnalyticsEngine;
   private oracles: Map<string, EnhancedOracle> = new Map();
   private server: any;
 
@@ -50,9 +52,12 @@ export class OracleAPIServer {
     this.app = express();
     this.storage = new PostgreSQLStorage(config.postgresConfig);
     this.dashboard = new PerformanceDashboard();
+    this.analytics = new OTPAnalyticsEngine();
     
     this.setupMiddleware();
     this.setupRoutes();
+    this.setupAnalyticsRoutes();
+    this.setupDashboardRoutes();
     this.setupSwagger();
   }
 
@@ -266,6 +271,146 @@ export class OracleAPIServer {
 
         const metrics = await oracle.getRealTimeMetrics();
         res.json(metrics);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.use('/api', router);
+  }
+
+  private setupAnalyticsRoutes(): void {
+    const router = express.Router();
+
+    // Get Calibration Metrics
+    router.get('/metrics/calibration', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId, timeRange, context } = req.query;
+        
+        let pairs;
+        if (oracleId) {
+          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        } else {
+          const timeRangeStr = timeRange as string;
+          const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
+          const endDate = timeRangeStr ? new Date(timeRangeStr.split(',')[1]!) : undefined;
+          const timeRangeObj = startDate && endDate ? { start: startDate, end: endDate } : undefined;
+          pairs = await this.storage.getJudgmentPairs(timeRangeObj, context as string);
+        }
+
+        const calibration = await this.analytics.calculateCalibration(pairs);
+        res.json(calibration);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get VoI Metrics
+    router.get('/metrics/voi', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId, timeRange, context } = req.query;
+        
+        let pairs;
+        if (oracleId) {
+          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        } else {
+          const timeRangeStr = timeRange as string;
+          const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
+          const endDate = timeRangeStr ? new Date(timeRangeStr.split(',')[1]!) : undefined;
+          const timeRangeObj = startDate && endDate ? { start: startDate, end: endDate } : undefined;
+          pairs = await this.storage.getJudgmentPairs(timeRangeObj, context as string);
+        }
+
+        const voi = await this.analytics.calculateVoI(pairs);
+        res.json(voi);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Mapper Performance
+    router.get('/metrics/mapper/:mapperId', this.authenticateToken, async (req, res) => {
+      try {
+        const { mapperId } = req.params;
+        const { timeRange } = req.query;
+        
+        if (!mapperId) {
+          res.status(400).json({ error: 'Mapper ID is required' });
+          return;
+        }
+        
+        const timeRangeStr = timeRange as string;
+        const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
+        const endDate = timeRangeStr ? new Date(timeRangeStr.split(',')[1]!) : undefined;
+        const timeRangeObj = startDate && endDate ? { start: startDate, end: endDate } : undefined;
+        
+        const pairs = await this.storage.getJudgmentPairsByMapper(mapperId, timeRangeObj);
+        const performance = await this.analytics.evaluateMapperPerformance(mapperId, pairs, timeRangeObj);
+        
+        res.json(performance);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Comprehensive Performance Analysis
+    router.get('/metrics/performance/:oracleId', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId } = req.params;
+        const { timeRange } = req.query;
+        
+        if (!oracleId) {
+          res.status(400).json({ error: 'Oracle ID is required' });
+          return;
+        }
+        
+        const timeRangeStr = timeRange as string;
+        const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
+        const endDate = timeRangeStr ? new Date(timeRangeStr.split(',')[1]!) : undefined;
+        const timeRangeObj = startDate && endDate ? { start: startDate, end: endDate } : undefined;
+        
+        let pairs;
+        if (timeRangeObj) {
+          pairs = await this.storage.getJudgmentPairs(timeRangeObj);
+        } else {
+          pairs = await this.storage.getPairsByOracle(oracleId);
+        }
+        
+        const analysis = await this.analytics.analyzePerformance(oracleId, pairs);
+        res.json(analysis);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get All Mappers Performance
+    router.get('/metrics/mappers', this.authenticateToken, async (req, res) => {
+      try {
+        const { timeRange, context } = req.query;
+        
+        const timeRangeStr = timeRange as string;
+        const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
+        const endDate = timeRangeStr ? new Date(timeRangeStr.split(',')[1]!) : undefined;
+        const timeRangeObj = startDate && endDate ? { start: startDate, end: endDate } : undefined;
+        
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, context as string);
+        
+        // Get unique mapper IDs
+        const mapperIds = [...new Set(pairs.map(p => p.decision.mapper_id).filter(Boolean))];
+        
+        const mappersPerformance = await Promise.all(
+          mapperIds.map(async (mapperId) => {
+            if (!mapperId) return null;
+            const mapperPairs = pairs.filter(p => p.decision.mapper_id === mapperId);
+            return await this.analytics.evaluateMapperPerformance(mapperId, mapperPairs, timeRangeObj);
+          })
+        );
+        
+        res.json({
+          mappers: mappersPerformance.filter(Boolean),
+          total: mappersPerformance.filter(Boolean).length,
+          timeRange: timeRangeObj
+        });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
       }

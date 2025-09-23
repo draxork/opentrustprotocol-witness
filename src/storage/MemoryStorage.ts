@@ -46,6 +46,49 @@ export class MemoryStorage implements JudgmentPairStorage {
     return pair ? [pair] : [];
   }
 
+  async getJudgmentPairs(
+    timeRange?: { start: Date; end: Date },
+    context?: string
+  ): Promise<JudgmentPair[]> {
+    let pairs = Array.from(this.storage.values());
+    
+    if (timeRange) {
+      pairs = pairs.filter(pair => {
+        const timestamp = new Date(pair.decision.timestamp);
+        return timestamp >= timeRange.start && timestamp <= timeRange.end;
+      });
+    }
+    
+    if (context) {
+      pairs = pairs.filter(pair => 
+        pair.decision.context && pair.decision.context['context'] === context
+      );
+    }
+    
+    return pairs.sort((a, b) => 
+      new Date(b.decision.timestamp).getTime() - new Date(a.decision.timestamp).getTime()
+    );
+  }
+
+  async getJudgmentPairsByMapper(
+    mapperId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<JudgmentPair[]> {
+    let pairs = Array.from(this.storage.values())
+      .filter(pair => pair.decision.mapper_id === mapperId);
+    
+    if (timeRange) {
+      pairs = pairs.filter(pair => {
+        const timestamp = new Date(pair.decision.timestamp);
+        return timestamp >= timeRange.start && timestamp <= timeRange.end;
+      });
+    }
+    
+    return pairs.sort((a, b) => 
+      new Date(b.decision.timestamp).getTime() - new Date(a.decision.timestamp).getTime()
+    );
+  }
+
   async getStorageStats(): Promise<StorageStats> {
     const totalPairs = this.storage.size;
     const oracleCount = this.oracleIndex.size;

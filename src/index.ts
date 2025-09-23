@@ -18,7 +18,7 @@ export * from './server';
 export * from './types/index';
 
 // Version information
-export const VERSION = '4.0.0';
+export const VERSION = '4.0.2';
 
 export const VERSION_INFO = {
   version: VERSION,

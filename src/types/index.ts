@@ -1,32 +1,48 @@
 /**
  * OpenTrust Protocol Oracle - Advanced Types
  * 
- * @version 2.0.0
+ * @version 4.0.2
  * @author OpenTrust Protocol Team
  */
 
-// Core OTP Types (re-exported from opentrustprotocol)
+// Import core types from opentrustprotocol package
+import { 
+  ProvenanceEntry as CoreProvenanceEntry,
+  OutcomeType as CoreOutcomeType
+} from 'opentrustprotocol';
+
+// Extended NeutrosophicJudgment with judgment_id for oracle use
 export interface NeutrosophicJudgment {
   judgment_id?: string;
-  t: number;
-  i: number;
-  f: number;
-  provenance_chain: ProvenanceEntry[];
+  T: number;
+  I: number;
+  F: number;
+  provenance_chain: readonly ProvenanceEntry[];
+  validate(): void;
+  toJSON(): object;
+  toString(): string;
+  equals(other: NeutrosophicJudgment): boolean;
 }
 
-export interface ProvenanceEntry {
-  source_id: string;
-  timestamp: string;
-  description?: string;
-  metadata?: Record<string, any>;
-}
+// Re-export other core types
+export type ProvenanceEntry = CoreProvenanceEntry;
 
-export interface OutcomeJudgment extends NeutrosophicJudgment {
+// Extended OutcomeJudgment with additional outcome types for oracle use
+export interface OutcomeJudgment {
+  judgment_id: string;
   links_to_judgment_id: string;
-  outcome_type: OutcomeType;
+  T: number;
+  I: number;
+  F: number;
+  outcome_type: string; // Allow any string for oracle-specific types
+  oracle_source: string;
+  provenance_chain: readonly ProvenanceEntry[];
 }
 
-export enum OutcomeType {
+export { CoreOutcomeType as OutcomeType };
+
+// Extended outcome types for oracle-specific use cases
+export enum ExtendedOutcomeType {
   SUCCESS = 'success',
   FAILURE = 'failure',
   PARTIAL = 'partial',
@@ -159,6 +175,8 @@ export interface JudgmentPairStorage {
   getPair(judgmentId: string): Promise<JudgmentPair | null>;
   getPairsByOracle(oracleId: string): Promise<JudgmentPair[]>;
   getPairsByJudgmentId(judgmentId: string): Promise<JudgmentPair[]>;
+  getJudgmentPairs(timeRange?: { start: Date; end: Date }, context?: string): Promise<JudgmentPair[]>;
+  getJudgmentPairsByMapper(mapperId: string, timeRange?: { start: Date; end: Date }): Promise<JudgmentPair[]>;
   getStorageStats(): Promise<StorageStats>;
   cleanup(olderThanMs: number): Promise<number>;
 }

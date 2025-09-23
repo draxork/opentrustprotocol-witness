@@ -174,17 +174,17 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
 
       const values = [
         pair.decision.judgment_id,
-        pair.decision.judgment.t,
-        pair.decision.judgment.i,
-        pair.decision.judgment.f,
+        pair.decision.judgment.T,
+        pair.decision.judgment.I,
+        pair.decision.judgment.F,
         new Date(pair.decision.timestamp),
         JSON.stringify(pair.decision.context),
         pair.decision.mapper_id || null,
         pair.outcome.judgment_id,
         pair.outcome.outcome_judgment.links_to_judgment_id,
-        pair.outcome.outcome_judgment.t,
-        pair.outcome.outcome_judgment.i,
-        pair.outcome.outcome_judgment.f,
+        pair.outcome.outcome_judgment.T,
+        pair.outcome.outcome_judgment.I,
+        pair.outcome.outcome_judgment.F,
         pair.outcome.outcome_judgment.outcome_type,
         pair.outcome.oracle_source,
         new Date(pair.outcome.timestamp),
@@ -281,6 +281,88 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
       return result.rows.map(row => this.mapRowToJudgmentPair(row));
     } catch (error) {
       console.error('Failed to get pairs by judgment ID:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get judgment pairs with optional time range and context filtering
+   */
+  async getJudgmentPairs(
+    timeRange?: { start: Date; end: Date },
+    context?: string
+  ): Promise<JudgmentPair[]> {
+    await this.initialize();
+
+    const client = await this.pool.connect();
+    
+    try {
+      let query = `
+        SELECT * FROM judgment_pairs 
+        WHERE 1=1
+      `;
+      const params: any[] = [];
+      let paramIndex = 1;
+
+      if (timeRange) {
+        query += ` AND decision_timestamp >= $${paramIndex} AND decision_timestamp <= $${paramIndex + 1}`;
+        params.push(timeRange.start, timeRange.end);
+        paramIndex += 2;
+      }
+
+      if (context) {
+        query += ` AND decision_context->>'context' = $${paramIndex}`;
+        params.push(context);
+        paramIndex += 1;
+      }
+
+      query += ` ORDER BY decision_timestamp DESC`;
+
+      const result: QueryResult = await client.query(query, params);
+      
+      return result.rows.map(row => this.mapRowToJudgmentPair(row));
+    } catch (error) {
+      console.error('Failed to get judgment pairs:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get judgment pairs by mapper ID
+   */
+  async getJudgmentPairsByMapper(
+    mapperId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<JudgmentPair[]> {
+    await this.initialize();
+
+    const client = await this.pool.connect();
+    
+    try {
+      let query = `
+        SELECT * FROM judgment_pairs 
+        WHERE decision_mapper_id = $1
+      `;
+      const params: any[] = [mapperId];
+      let paramIndex = 2;
+
+      if (timeRange) {
+        query += ` AND decision_timestamp >= $${paramIndex} AND decision_timestamp <= $${paramIndex + 1}`;
+        params.push(timeRange.start, timeRange.end);
+        paramIndex += 2;
+      }
+
+      query += ` ORDER BY decision_timestamp DESC`;
+
+      const result: QueryResult = await client.query(query, params);
+      
+      return result.rows.map(row => this.mapRowToJudgmentPair(row));
+    } catch (error) {
+      console.error('Failed to get pairs by mapper:', error);
       throw error;
     } finally {
       client.release();
@@ -496,12 +578,11 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
       decision: {
         judgment_id: row.decision_judgment_id,
         judgment: {
-          judgment_id: row.decision_judgment_id,
-          t: parseFloat(row.decision_t),
-          i: parseFloat(row.decision_i),
-          f: parseFloat(row.decision_f),
+          T: parseFloat(row.decision_t),
+          I: parseFloat(row.decision_i),
+          F: parseFloat(row.decision_f),
           provenance_chain: []
-        },
+        } as any,
         timestamp: row.decision_timestamp.toISOString(),
         context: row.decision_context || {},
         mapper_id: row.decision_mapper_id
@@ -511,10 +592,11 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
         outcome_judgment: {
           judgment_id: row.outcome_judgment_id,
           links_to_judgment_id: row.outcome_links_to_judgment_id,
-          t: parseFloat(row.outcome_t),
-          i: parseFloat(row.outcome_i),
-          f: parseFloat(row.outcome_f),
+          T: parseFloat(row.outcome_t),
+          I: parseFloat(row.outcome_i),
+          F: parseFloat(row.outcome_f),
           outcome_type: row.outcome_type,
+          oracle_source: row.outcome_oracle_source,
           provenance_chain: row.outcome_provenance_chain || []
         },
         timestamp: row.outcome_timestamp.toISOString(),

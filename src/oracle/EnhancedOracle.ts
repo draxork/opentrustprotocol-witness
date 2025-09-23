@@ -12,7 +12,6 @@ import {
   NeutrosophicJudgment, 
   OutcomeJudgment,
   PerformanceAnalysis,
-  OutcomeType,
   JudgmentPairStorage
 } from '../types/index';
 
@@ -43,7 +42,7 @@ export class EnhancedOracle {
     // Create judgment pair
     const pair: JudgmentPair = {
       decision: {
-        judgment_id: decision.judgment_id,
+        judgment_id: decision.judgment_id!,
         judgment: decision,
         timestamp: new Date().toISOString(),
         context: context || {},
@@ -60,7 +59,7 @@ export class EnhancedOracle {
     // Store the pair
     await this.storage.savePair(pair);
 
-    console.log(`✅ Enhanced Oracle ${this.config.oracleId} recorded outcome for judgment ${decision.judgment_id}`);
+    console.log(`✅ Enhanced Oracle ${this.config.oracleId} recorded outcome for judgment ${decision.judgment_id!}`);
   }
 
   /**
@@ -191,10 +190,10 @@ export class EnhancedOracle {
     if (pairs.length === 0) return 0;
 
     const successes = pairs.filter(pair => {
-      const outcome = pair.outcome.outcome_judgment;
-      return outcome.outcome_type === OutcomeType.SUCCESS ||
-             outcome.outcome_type === OutcomeType.TRADING_SUCCESS ||
-             outcome.outcome_type === OutcomeType.MEDICAL_SUCCESS;
+      const outcomeType = pair.outcome.outcome_judgment.outcome_type;
+      return outcomeType === 'success' ||
+             outcomeType === 'trading_success' ||
+             outcomeType === 'medical_success';
     }).length;
 
     return successes / pairs.length;
@@ -203,14 +202,14 @@ export class EnhancedOracle {
   private calculateAverageConfidence(pairs: JudgmentPair[]): number {
     if (pairs.length === 0) return 0;
     
-    const totalConfidence = pairs.reduce((sum, pair) => sum + pair.decision.judgment.t, 0);
+    const totalConfidence = pairs.reduce((sum, pair) => sum + pair.decision.judgment.T, 0);
     return totalConfidence / pairs.length;
   }
 
   private calculateAverageIndeterminacy(pairs: JudgmentPair[]): number {
     if (pairs.length === 0) return 0;
     
-    const totalIndeterminacy = pairs.reduce((sum, pair) => sum + pair.decision.judgment.i, 0);
+    const totalIndeterminacy = pairs.reduce((sum, pair) => sum + pair.decision.judgment.I, 0);
     return totalIndeterminacy / pairs.length;
   }
 
