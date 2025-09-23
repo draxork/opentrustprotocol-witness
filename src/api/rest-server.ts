@@ -1,0 +1,435 @@
+/**
+ * OpenTrust Protocol Oracle - REST API Server
+ * 
+ * Production-ready REST API with Express.js, authentication,
+ * rate limiting, and comprehensive Oracle operations.
+ * 
+ * @version 4.0.0
+ * @author OpenTrust Protocol Team
+ */
+
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import jwt from 'jsonwebtoken';
+
+import { EnhancedOracle } from '../oracle/EnhancedOracle';
+import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
+import { PostgreSQLStorage } from '../storage/PostgreSQLStorage';
+import { OracleConfig } from '../types/index';
+
+export interface APIConfig {
+  port: number;
+  jwtSecret: string;
+  corsOrigins: string[];
+  rateLimitWindowMs: number;
+  rateLimitMax: number;
+  postgresConfig: {
+    host: string;
+    port: number;
+    database: string;
+    username: string;
+    password: string;
+    ssl?: boolean;
+  };
+}
+
+export class OracleAPIServer {
+  private app: express.Application;
+  private config: APIConfig;
+  private storage: PostgreSQLStorage;
+  private dashboard: PerformanceDashboard;
+  private oracles: Map<string, EnhancedOracle> = new Map();
+  private server: any;
+
+  constructor(config: APIConfig) {
+    this.config = config;
+    this.app = express();
+    this.storage = new PostgreSQLStorage(config.postgresConfig);
+    this.dashboard = new PerformanceDashboard();
+    
+    this.setupMiddleware();
+    this.setupRoutes();
+    this.setupSwagger();
+  }
+
+  /**
+   * Start the API server
+   */
+  async start(): Promise<void> {
+    try {
+      // Initialize storage
+      await this.storage.initialize();
+      console.log('✅ PostgreSQL storage initialized');
+
+      // Start server
+      this.server = this.app.listen(this.config.port, () => {
+        console.log(`🚀 Oracle API Server running on port ${this.config.port}`);
+        console.log(`📚 API Documentation: http://localhost:${this.config.port}/api-docs`);
+        console.log(`🔗 Health Check: http://localhost:${this.config.port}/health`);
+      });
+
+      // Start dashboard monitoring
+      this.dashboard.startMonitoring(10000); // 10 second intervals
+      console.log('📊 Performance dashboard monitoring started');
+
+    } catch (error) {
+      console.error('Failed to start API server:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop the API server
+   */
+  async stop(): Promise<void> {
+    if (this.server) {
+      this.server.close();
+    }
+    await this.storage.close();
+    this.dashboard.stopMonitoring();
+    console.log('🛑 Oracle API Server stopped');
+  }
+
+  private setupMiddleware(): void {
+    // Security middleware
+    this.app.use(helmet());
+    
+    // CORS middleware
+    this.app.use(cors({
+      origin: this.config.corsOrigins,
+      credentials: true
+    }));
+
+    // Rate limiting
+    const limiter = rateLimit({
+      windowMs: this.config.rateLimitWindowMs,
+      max: this.config.rateLimitMax,
+      message: {
+        error: 'Too many requests from this IP, please try again later.',
+        retryAfter: Math.ceil(this.config.rateLimitWindowMs / 1000)
+      }
+    });
+    this.app.use('/api/', limiter);
+
+    // Body parsing
+    this.app.use(express.json({ limit: '10mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // Request logging
+    this.app.use((req, _res, next) => {
+      console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+      next();
+    });
+  }
+
+  private setupRoutes(): void {
+    // Health check endpoint
+    this.app.get('/health', (_req, res) => {
+      res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: '4.0.0',
+        uptime: process.uptime()
+      });
+    });
+
+    // API routes
+    this.setupOracleRoutes();
+    this.setupDashboardRoutes();
+    this.setupStorageRoutes();
+  }
+
+  private setupOracleRoutes(): void {
+    const router = express.Router();
+
+    // Create Oracle
+    router.post('/oracles', this.authenticateToken, async (req, res) => {
+      try {
+        const config: OracleConfig = req.body;
+        
+        if (!config.oracleId || !config.version || !config.description) {
+          res.status(400).json({
+            error: 'Missing required fields: oracleId, version, description'
+          });
+          return;
+        }
+
+        if (this.oracles.has(config.oracleId)) {
+          res.status(409).json({
+            error: `Oracle with ID '${config.oracleId}' already exists`
+          });
+          return;
+        }
+
+        const oracle = new EnhancedOracle(config, this.storage);
+        this.oracles.set(config.oracleId, oracle);
+        this.dashboard.registerOracle(oracle);
+
+        res.status(201).json({
+          message: 'Oracle created successfully',
+          oracleId: config.oracleId,
+          config
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Oracle
+    router.get('/oracles/:oracleId', this.authenticateToken, async (req, res) => {
+      try {
+        const oracleId = req.params['oracleId'];
+        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
+
+        if (!oracle) {
+          res.status(404).json({
+            error: `Oracle '${oracleId}' not found`
+          });
+          return;
+        }
+
+        const status = await oracle.getOracleStatus();
+        res.json(status);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // List Oracles
+    router.get('/oracles', this.authenticateToken, async (_req, res) => {
+      try {
+        const oraclesList = Array.from(this.oracles.keys()).map(oracleId => ({
+          oracleId,
+          registered: true
+        }));
+
+        res.json({
+          oracles: oraclesList,
+          total: oraclesList.length
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Record Outcome
+    router.post('/oracles/:oracleId/outcomes', this.authenticateToken, async (req, res) => {
+      try {
+        const oracleId = req.params['oracleId'];
+        const { decision, outcome, context } = req.body;
+
+        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
+        if (!oracle) {
+          res.status(404).json({
+            error: `Oracle '${oracleId}' not found`
+          });
+          return;
+        }
+
+        // Validate inputs
+        if (!decision || !outcome) {
+          res.status(400).json({
+            error: 'Missing required fields: decision, outcome'
+          });
+          return;
+        }
+
+        await oracle.recordOutcome(decision, outcome, context);
+
+        res.status(201).json({
+          message: 'Outcome recorded successfully',
+          oracleId,
+          decisionId: decision.judgment_id,
+          outcomeId: outcome.judgment_id
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Oracle Metrics
+    router.get('/oracles/:oracleId/metrics', this.authenticateToken, async (req, res) => {
+      try {
+        const oracleId = req.params['oracleId'];
+        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
+
+        if (!oracle) {
+          res.status(404).json({
+            error: `Oracle '${oracleId}' not found`
+          });
+          return;
+        }
+
+        const metrics = await oracle.getRealTimeMetrics();
+        res.json(metrics);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.use('/api', router);
+  }
+
+  private setupDashboardRoutes(): void {
+    const router = express.Router();
+
+    // Get Dashboard Metrics
+    router.get('/dashboard/metrics', this.authenticateToken, async (_req, res) => {
+      try {
+        const metrics = await this.dashboard.getCurrentMetrics();
+        res.json(metrics);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Dashboard Trends
+    router.get('/dashboard/trends', this.authenticateToken, async (_req, res) => {
+      try {
+        const trends = this.dashboard.getPerformanceTrends();
+        res.json(trends);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Generate Performance Report
+    router.post('/dashboard/report', this.authenticateToken, async (_req, res) => {
+      try {
+        const report = await this.dashboard.generateReport();
+        res.json(report);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.use('/api', router);
+  }
+
+  private setupStorageRoutes(): void {
+    const router = express.Router();
+
+    // Get Storage Statistics
+    router.get('/storage/stats', this.authenticateToken, async (_req, res) => {
+      try {
+        const stats = await this.storage.getStorageStats();
+        res.json(stats);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Storage Pairs
+    router.get('/storage/pairs', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId, judgmentId } = req.query;
+        
+        if (!oracleId && !judgmentId) {
+          res.status(400).json({
+            error: 'At least one query parameter is required: oracleId or judgmentId'
+          });
+          return;
+        }
+
+        let pairs;
+        if (oracleId) {
+          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        } else if (judgmentId) {
+          pairs = await this.storage.getPairsByJudgmentId(judgmentId as string);
+        }
+
+        res.json({
+          pairs: pairs || [],
+          total: pairs ? pairs.length : 0
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Storage Pair by ID
+    router.get('/storage/pairs/:judgmentId', this.authenticateToken, async (req, res) => {
+      try {
+        const judgmentId = req.params['judgmentId'];
+        if (!judgmentId) {
+          res.status(400).json({ error: 'Judgment ID is required' });
+          return;
+        }
+        const pair = await this.storage.getPair(judgmentId);
+        
+        if (!pair) {
+          res.status(404).json({
+            error: `Judgment pair with ID '${judgmentId}' not found`
+          });
+          return;
+        }
+
+        res.json(pair);
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.use('/api', router);
+  }
+
+  private setupSwagger(): void {
+    const swaggerOptions = {
+      definition: {
+        openapi: '3.0.0',
+        info: {
+          title: 'OpenTrust Protocol Oracle API',
+          version: '4.0.0',
+          description: 'Production-ready REST API for Oracle operations with Analytics and Dashboard',
+        },
+        servers: [
+          {
+            url: `http://localhost:${this.config.port}`,
+            description: 'Development server',
+          },
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            },
+          },
+        },
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
+      },
+      apis: ['./src/api/rest-server.ts'],
+    };
+
+    const specs = swaggerJsdoc(swaggerOptions);
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  }
+
+  private authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      res.status(401).json({ error: 'Access token required' });
+      return;
+    }
+
+    jwt.verify(token, this.config.jwtSecret, (err: any, user: any) => {
+      if (err) {
+        res.status(403).json({ error: 'Invalid or expired token' });
+        return;
+      }
+      (req as any).user = user;
+      next();
+    });
+  };
+}

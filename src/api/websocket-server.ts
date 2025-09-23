@@ -1,0 +1,410 @@
+/**
+ * OpenTrust Protocol Oracle - WebSocket Server
+ * 
+ * Real-time WebSocket server for live metrics streaming,
+ * dashboard updates, and Oracle performance monitoring.
+ * 
+ * @version 4.0.0
+ * @author OpenTrust Protocol Team
+ */
+
+import { WebSocketServer, WebSocket } from 'ws';
+import jwt from 'jsonwebtoken';
+import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
+import { EnhancedOracle } from '../oracle/EnhancedOracle';
+
+export interface WebSocketConfig {
+  port: number;
+  jwtSecret: string;
+  heartbeatInterval: number;
+}
+
+export interface AuthenticatedWebSocket extends WebSocket {
+  isAlive: boolean;
+  user: {
+    username: string;
+    role: string;
+  };
+}
+
+export class OracleWebSocketServer {
+  private wss: WebSocketServer;
+  private config: WebSocketConfig;
+  private dashboard: PerformanceDashboard;
+  private oracles: Map<string, EnhancedOracle>;
+  private clients: Set<AuthenticatedWebSocket> = new Set();
+  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private metricsBroadcastInterval: NodeJS.Timeout | null = null;
+
+  constructor(config: WebSocketConfig, dashboard: PerformanceDashboard, oracles: Map<string, EnhancedOracle>) {
+    this.config = config;
+    this.dashboard = dashboard;
+    this.oracles = oracles;
+    this.wss = new WebSocketServer({ port: config.port });
+    
+    this.setupWebSocketServer();
+  }
+
+  /**
+   * Start the WebSocket server
+   */
+  start(): void {
+    console.log(`🔌 WebSocket Server running on port ${this.config.port}`);
+    this.startHeartbeat();
+    this.startMetricsBroadcast();
+  }
+
+  /**
+   * Stop the WebSocket server
+   */
+  stop(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+    if (this.metricsBroadcastInterval) {
+      clearInterval(this.metricsBroadcastInterval);
+    }
+    
+    this.wss.close();
+    console.log('🔌 WebSocket Server stopped');
+  }
+
+  private setupWebSocketServer(): void {
+    this.wss.on('connection', (ws: WebSocket, request) => {
+      console.log('📡 New WebSocket connection attempt');
+      
+      // Authenticate the connection
+      this.authenticateConnection(ws, request).then(authenticated => {
+        if (authenticated) {
+          this.handleAuthenticatedConnection(ws as AuthenticatedWebSocket);
+        } else {
+          ws.close(1008, 'Authentication failed');
+        }
+      }).catch(error => {
+        console.error('Authentication error:', error);
+        ws.close(1011, 'Authentication error');
+      });
+    });
+
+    this.wss.on('error', (error) => {
+      console.error('WebSocket Server error:', error);
+    });
+  }
+
+  private async authenticateConnection(ws: WebSocket, request: any): Promise<boolean> {
+    try {
+      const url = new URL(request.url || '', 'ws://localhost');
+      const token = url.searchParams.get('token');
+      
+      if (!token) {
+        return false;
+      }
+
+      const decoded = jwt.verify(token, this.config.jwtSecret) as any;
+      (ws as AuthenticatedWebSocket).user = {
+        username: decoded.username,
+        role: decoded.role
+      };
+      
+      return true;
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return false;
+    }
+  }
+
+  private handleAuthenticatedConnection(ws: AuthenticatedWebSocket): void {
+    ws.isAlive = true;
+    this.clients.add(ws);
+    
+    console.log(`✅ Authenticated WebSocket connection for user: ${ws.user.username}`);
+
+    // Send welcome message
+    this.sendToClient(ws, {
+      type: 'welcome',
+      message: 'Connected to OpenTrust Protocol Oracle WebSocket',
+      user: ws.user,
+      timestamp: new Date().toISOString()
+    });
+
+    // Handle incoming messages
+    ws.on('message', (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        this.handleClientMessage(ws, message);
+      } catch (error) {
+        console.error('Invalid message format:', error);
+        this.sendError(ws, 'Invalid message format');
+      }
+    });
+
+    // Handle client disconnect
+    ws.on('close', () => {
+      this.clients.delete(ws);
+      console.log(`👋 WebSocket client disconnected: ${ws.user.username}`);
+    });
+
+    // Handle ping/pong for connection health
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
+
+    // Send initial dashboard metrics
+    this.sendDashboardMetrics(ws);
+  }
+
+  private async handleClientMessage(ws: AuthenticatedWebSocket, message: any): Promise<void> {
+    try {
+      switch (message.type) {
+        case 'subscribe':
+          await this.handleSubscription(ws, message);
+          break;
+          
+        case 'unsubscribe':
+          await this.handleUnsubscription(ws, message);
+          break;
+          
+        case 'get_metrics':
+          await this.sendDashboardMetrics(ws);
+          break;
+          
+        case 'get_oracle_metrics':
+          await this.sendOracleMetrics(ws, message.oracleId);
+          break;
+          
+        case 'get_oracle_analysis':
+          await this.sendOracleAnalysis(ws, message.oracleId);
+          break;
+          
+        case 'ping':
+          this.sendToClient(ws, { type: 'pong', timestamp: new Date().toISOString() });
+          break;
+          
+        default:
+          this.sendError(ws, `Unknown message type: ${message.type}`);
+      }
+    } catch (error: any) {
+      console.error('Error handling client message:', error);
+      this.sendError(ws, error.message);
+    }
+  }
+
+  private async handleSubscription(ws: AuthenticatedWebSocket, message: any): Promise<void> {
+    const { channel } = message;
+    
+    // Store subscription (simplified - in production use proper subscription management)
+    (ws as any).subscriptions = (ws as any).subscriptions || new Set();
+    (ws as any).subscriptions.add(channel);
+    
+    this.sendToClient(ws, {
+      type: 'subscription_confirmed',
+      channel,
+      timestamp: new Date().toISOString()
+    });
+
+    // Send current data for the subscribed channel
+    switch (channel) {
+      case 'dashboard_metrics':
+        await this.sendDashboardMetrics(ws);
+        break;
+      case 'all_oracle_metrics':
+        await this.sendAllOracleMetrics(ws);
+        break;
+    }
+  }
+
+  private async handleUnsubscription(ws: AuthenticatedWebSocket, message: any): Promise<void> {
+    const { channel } = message;
+    
+    (ws as any).subscriptions = (ws as any).subscriptions || new Set();
+    (ws as any).subscriptions.delete(channel);
+    
+    this.sendToClient(ws, {
+      type: 'unsubscription_confirmed',
+      channel,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  private async sendDashboardMetrics(ws: AuthenticatedWebSocket): Promise<void> {
+    try {
+      const metrics = await this.dashboard.getCurrentMetrics();
+      this.sendToClient(ws, {
+        type: 'dashboard_metrics',
+        data: metrics,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      this.sendError(ws, `Failed to get dashboard metrics: ${error.message}`);
+    }
+  }
+
+  private async sendOracleMetrics(ws: AuthenticatedWebSocket, oracleId: string): Promise<void> {
+    try {
+      const oracle = this.oracles.get(oracleId);
+      if (!oracle) {
+        this.sendError(ws, `Oracle '${oracleId}' not found`);
+        return;
+      }
+
+      const metrics = await oracle.getRealTimeMetrics();
+      this.sendToClient(ws, {
+        type: 'oracle_metrics',
+        oracleId,
+        data: metrics,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      this.sendError(ws, `Failed to get oracle metrics: ${error.message}`);
+    }
+  }
+
+  private async sendOracleAnalysis(ws: AuthenticatedWebSocket, oracleId: string): Promise<void> {
+    try {
+      const oracle = this.oracles.get(oracleId);
+      if (!oracle) {
+        this.sendError(ws, `Oracle '${oracleId}' not found`);
+        return;
+      }
+
+      const analysis = await oracle.getPerformanceAnalysis();
+      this.sendToClient(ws, {
+        type: 'oracle_analysis',
+        oracleId,
+        data: analysis,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      this.sendError(ws, `Failed to get oracle analysis: ${error.message}`);
+    }
+  }
+
+  private async sendAllOracleMetrics(ws: AuthenticatedWebSocket): Promise<void> {
+    try {
+      const allMetrics = {};
+      
+      for (const [oracleId, oracle] of this.oracles) {
+        try {
+          const metrics = await oracle.getRealTimeMetrics();
+          (allMetrics as any)[oracleId] = metrics;
+        } catch (error) {
+          console.warn(`Failed to get metrics for oracle ${oracleId}:`, error);
+        }
+      }
+
+      this.sendToClient(ws, {
+        type: 'all_oracle_metrics',
+        data: allMetrics,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      this.sendError(ws, `Failed to get all oracle metrics: ${error.message}`);
+    }
+  }
+
+  private startHeartbeat(): void {
+    this.heartbeatInterval = setInterval(() => {
+      this.clients.forEach(ws => {
+        if (!ws.isAlive) {
+          ws.terminate();
+          this.clients.delete(ws);
+          console.log(`💔 Terminated dead WebSocket connection: ${ws.user.username}`);
+          return;
+        }
+
+        ws.isAlive = false;
+        ws.ping();
+      });
+    }, this.config.heartbeatInterval);
+  }
+
+  private startMetricsBroadcast(): void {
+    this.metricsBroadcastInterval = setInterval(async () => {
+      if (this.clients.size === 0) return;
+
+      try {
+        const metrics = await this.dashboard.getCurrentMetrics();
+        
+        this.broadcastToSubscribers('dashboard_metrics', {
+          type: 'dashboard_metrics_update',
+          data: metrics,
+          timestamp: new Date().toISOString()
+        });
+
+        // Broadcast individual oracle metrics
+        for (const [oracleId, oracle] of this.oracles) {
+          try {
+            const oracleMetrics = await oracle.getRealTimeMetrics();
+            
+            this.broadcastToSubscribers(`oracle_${oracleId}_metrics`, {
+              type: 'oracle_metrics_update',
+              oracleId,
+              data: oracleMetrics,
+              timestamp: new Date().toISOString()
+            });
+          } catch (error) {
+            console.warn(`Failed to broadcast metrics for oracle ${oracleId}:`, error);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to broadcast metrics:', error);
+      }
+    }, 5000); // Broadcast every 5 seconds
+  }
+
+  private broadcastToSubscribers(channel: string, message: any): void {
+    this.clients.forEach(ws => {
+      const subscriptions = (ws as any).subscriptions || new Set();
+      
+      if (subscriptions.has(channel) || subscriptions.has('all')) {
+        this.sendToClient(ws, message);
+      }
+    });
+  }
+
+  private sendToClient(ws: AuthenticatedWebSocket, message: any): void {
+    if (ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify(message));
+      } catch (error) {
+        console.error('Failed to send message to client:', error);
+        this.clients.delete(ws);
+      }
+    }
+  }
+
+  private sendError(ws: AuthenticatedWebSocket, message: string): void {
+    this.sendToClient(ws, {
+      type: 'error',
+      message,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  /**
+   * Broadcast a custom message to all connected clients
+   */
+  public broadcast(message: any): void {
+    this.clients.forEach(ws => {
+      this.sendToClient(ws, {
+        ...message,
+        timestamp: new Date().toISOString()
+      });
+    });
+  }
+
+  /**
+   * Get connection statistics
+   */
+  public getStats(): {
+    totalConnections: number;
+    authenticatedConnections: number;
+    uptime: number;
+  } {
+    return {
+      totalConnections: this.clients.size,
+      authenticatedConnections: this.clients.size,
+      uptime: process.uptime()
+    };
+  }
+}
