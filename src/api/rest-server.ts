@@ -20,6 +20,7 @@ import { EnhancedOracle } from '../oracle/EnhancedOracle';
 import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
 import { PostgreSQLStorage } from '../storage/PostgreSQLStorage';
 import { OTPAnalyticsEngine } from '../analytics/OTPAnalyticsEngine';
+import { MLPredictiveEngine } from '../ml/MLPredictiveEngine';
 import { OracleConfig } from '../types/index';
 
 export interface APIConfig {
@@ -44,6 +45,7 @@ export class OracleAPIServer {
   private storage: PostgreSQLStorage;
   private dashboard: PerformanceDashboard;
   private analytics: OTPAnalyticsEngine;
+  private mlEngine: MLPredictiveEngine;
   private oracles: Map<string, EnhancedOracle> = new Map();
   private server: any;
 
@@ -53,10 +55,12 @@ export class OracleAPIServer {
     this.storage = new PostgreSQLStorage(config.postgresConfig);
     this.dashboard = new PerformanceDashboard();
     this.analytics = new OTPAnalyticsEngine();
+    this.mlEngine = new MLPredictiveEngine();
     
     this.setupMiddleware();
     this.setupRoutes();
     this.setupAnalyticsRoutes();
+    this.setupMLRoutes();
     this.setupDashboardRoutes();
     this.setupSwagger();
   }
@@ -411,6 +415,175 @@ export class OracleAPIServer {
           total: mappersPerformance.filter(Boolean).length,
           timeRange: timeRangeObj
         });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.use('/api', router);
+  }
+
+  private setupMLRoutes(): void {
+    const router = express.Router();
+
+    // Train ML Models
+    router.post('/ml/train', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId, timeRange } = req.body;
+        
+        // Get judgment pairs for training
+        const timeRangeObj = timeRange ? {
+          start: new Date(timeRange.start),
+          end: new Date(timeRange.end)
+        } : undefined;
+        
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        
+        if (pairs.length === 0) {
+          return res.status(400).json({ error: 'No judgment pairs found for training' });
+        }
+
+        // Train models
+        await this.mlEngine.trainModels(pairs);
+        
+        return res.json({
+          message: 'ML models trained successfully',
+          training_samples: pairs.length,
+          models: this.mlEngine.getModels()
+        });
+      } catch (error: any) {
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Generate Prediction
+    router.post('/ml/predict', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId, judgment, predictionType, context } = req.body;
+        
+        if (!oracleId || !judgment || !predictionType) {
+          return res.status(400).json({ 
+            error: 'Missing required fields: oracleId, judgment, predictionType' 
+          });
+        }
+
+        const prediction = await this.mlEngine.generatePrediction(
+          oracleId,
+          judgment,
+          predictionType,
+          context
+        );
+        
+        return res.json(prediction);
+      } catch (error: any) {
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get Predictions for Oracle
+    router.get('/ml/predictions/:oracleId', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId } = req.params;
+        const predictions = this.mlEngine.getPredictions(oracleId || '');
+        
+        res.json({
+          oracle_id: oracleId,
+          predictions,
+          total: predictions.length
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Analyze Trends
+    router.get('/ml/trends/:oracleId', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId } = req.params;
+        const { timeRange } = req.query;
+        
+        // Get judgment pairs for trend analysis
+        const timeRangeObj = timeRange ? {
+          start: new Date((timeRange as string).split(',')[0]!),
+          end: new Date((timeRange as string).split(',')[1]!)
+        } : undefined;
+        
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        
+        if (pairs.length < 2) {
+          return res.status(400).json({ error: 'Insufficient data for trend analysis' });
+        }
+
+        const trendAnalysis = await this.mlEngine.analyzeTrends(pairs, oracleId || '');
+        
+        return res.json(trendAnalysis);
+      } catch (error: any) {
+        return res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Generate Alerts
+    router.get('/ml/alerts/:oracleId', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId } = req.params;
+        const { timeRange } = req.query;
+        
+        // Get judgment pairs for alert generation
+        const timeRangeObj = timeRange ? {
+          start: new Date((timeRange as string).split(',')[0]!),
+          end: new Date((timeRange as string).split(',')[1]!)
+        } : undefined;
+        
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        
+        const alerts = await this.mlEngine.generateAlerts(pairs, oracleId || '');
+        
+        res.json({
+          oracle_id: oracleId,
+          alerts,
+          total: alerts.length
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get ML Models
+    router.get('/ml/models', this.authenticateToken, async (_req, res) => {
+      try {
+        const models = this.mlEngine.getModels();
+        res.json({
+          models,
+          total: models.length
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get All Alerts
+    router.get('/ml/alerts', this.authenticateToken, async (req, res) => {
+      try {
+        const { oracleId } = req.query;
+        
+        if (oracleId) {
+          const alerts = this.mlEngine.getAlerts(oracleId as string);
+          res.json({
+            oracle_id: oracleId,
+            alerts,
+            total: alerts.length
+          });
+        } else {
+          // Get alerts for all oracles
+          const allAlerts = Array.from(this.mlEngine.getAlerts('')).concat(
+            ...Array.from(this.oracles.keys()).map(id => this.mlEngine.getAlerts(id))
+          );
+          
+          res.json({
+            alerts: allAlerts,
+            total: allAlerts.length
+          });
+        }
       } catch (error: any) {
         res.status(500).json({ error: error.message });
       }

@@ -8,6 +8,7 @@
 // Export all components
 export * from './simple-oracle';
 export * from './analytics/OTPAnalyticsEngine';
+export * from './ml/MLPredictiveEngine';
 export * from './storage/MemoryStorage';
 export * from './storage/PostgreSQLStorage';
 export * from './oracle/EnhancedOracle';
