@@ -70,7 +70,7 @@ async function analyticsDemo() {
     {
       decision: {
         judgment_id: 'trade-1',
-        judgment: { t: 0.8, i: 0.1, f: 0.1, provenance_chain: [] },
+        judgment: { T: 0.8, I: 0.1, F: 0.1, provenance_chain: [] },
         timestamp: new Date().toISOString(),
         context: { pair: 'BTC/USDT' },
         mapper_id: 'trading-mapper'
@@ -78,7 +78,7 @@ async function analyticsDemo() {
       outcome: {
         judgment_id: 'outcome-trade-1',
         outcome_judgment: {
-          t: 1.0, i: 0.0, f: 0.0, provenance_chain: [],
+          T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
           links_to_judgment_id: 'trade-1',
           outcome_type: OutcomeType.TRADING_SUCCESS
         },
@@ -89,7 +89,7 @@ async function analyticsDemo() {
     {
       decision: {
         judgment_id: 'trade-2',
-        judgment: { t: 0.6, i: 0.2, f: 0.2, provenance_chain: [] },
+        judgment: { T: 0.6, I: 0.2, F: 0.2, provenance_chain: [] },
         timestamp: new Date().toISOString(),
         context: { pair: 'ETH/USDT' },
         mapper_id: 'trading-mapper'
@@ -97,7 +97,7 @@ async function analyticsDemo() {
       outcome: {
         judgment_id: 'outcome-trade-2',
         outcome_judgment: {
-          t: 0.0, i: 0.0, f: 1.0, provenance_chain: [],
+          T: 0.0, I: 0.0, F: 1.0, provenance_chain: [],
           links_to_judgment_id: 'trade-2',
           outcome_type: OutcomeType.TRADING_FAILURE
         },
@@ -109,7 +109,7 @@ async function analyticsDemo() {
     {
       decision: {
         judgment_id: 'treatment-1',
-        judgment: { t: 0.9, i: 0.05, f: 0.05, provenance_chain: [] },
+        judgment: { T: 0.9, I: 0.05, F: 0.05, provenance_chain: [] },
         timestamp: new Date().toISOString(),
         context: { condition: 'hypertension' },
         mapper_id: 'medical-mapper'
@@ -117,7 +117,7 @@ async function analyticsDemo() {
       outcome: {
         judgment_id: 'outcome-treatment-1',
         outcome_judgment: {
-          t: 1.0, i: 0.0, f: 0.0, provenance_chain: [],
+          T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
           links_to_judgment_id: 'treatment-1',
           outcome_type: OutcomeType.MEDICAL_SUCCESS
         },
@@ -128,7 +128,7 @@ async function analyticsDemo() {
     {
       decision: {
         judgment_id: 'treatment-2',
-        judgment: { t: 0.7, i: 0.15, f: 0.15, provenance_chain: [] },
+        judgment: { T: 0.7, I: 0.15, F: 0.15, provenance_chain: [] },
         timestamp: new Date().toISOString(),
         context: { condition: 'diabetes' },
         mapper_id: 'medical-mapper'
@@ -136,7 +136,7 @@ async function analyticsDemo() {
       outcome: {
         judgment_id: 'outcome-treatment-2',
         outcome_judgment: {
-          t: 0.0, i: 0.0, f: 1.0, provenance_chain: [],
+          T: 0.0, I: 0.0, F: 1.0, provenance_chain: [],
           links_to_judgment_id: 'treatment-2',
           outcome_type: OutcomeType.MEDICAL_FAILURE
         },
