@@ -1,10 +1,10 @@
 /**
- * OpenTrust Protocol Oracle - Simplified Tests
+ * OpenTrust Protocol Witness - Simplified Tests
  * 
- * Basic tests for the simplified Oracle system.
+ * Basic tests for the simplified Witness system.
  */
 
-import { SimpleOracle, createTradingOracle, createMedicalOracle } from '../src/simple-oracle';
+import { SimpleWitness, createTradingWitness, createMedicalWitness } from '../src/simple-witness';
 
 // Mock the opentrustprotocol dependency
 jest.mock('opentrustprotocol', () => ({
@@ -25,7 +25,7 @@ jest.mock('opentrustprotocol', () => ({
       public i: number,
       public f: number,
       public outcome_type: string,
-      public oracle_source: string,
+      public witness_source: string,
       public provenance_chain: any[],
       public metadata?: any
     ) {}
@@ -42,16 +42,16 @@ jest.mock('opentrustprotocol', () => ({
   }))
 }));
 
-describe('Simple Oracle System Tests', () => {
-  describe('SimpleOracle', () => {
-    it('should create oracle successfully', () => {
-      const oracle = new SimpleOracle('test-oracle');
-      expect(oracle).toBeDefined();
-      expect(oracle.oracleId).toBe('test-oracle');
+describe('Simple Witness System Tests', () => {
+  describe('SimpleWitness', () => {
+    it('should create witness successfully', () => {
+      const witness = new SimpleWitness('test-witness');
+      expect(witness).toBeDefined();
+      expect(witness.witnessId).toBe('test-witness');
     });
 
     it('should record outcome successfully', async () => {
-      const oracle = new SimpleOracle('test-oracle');
+      const witness = new SimpleWitness('test-witness');
       
       const outcome = {
         type: 'test',
@@ -59,11 +59,11 @@ describe('Simple Oracle System Tests', () => {
         confidence: 0.8
       };
 
-      await expect(oracle.recordOutcome('test-judgment-id', outcome)).resolves.not.toThrow();
+      await expect(witness.recordOutcome('test-judgment-id', outcome)).resolves.not.toThrow();
     });
 
     it('should get statistics', async () => {
-      const oracle = new SimpleOracle('test-oracle');
+      const witness = new SimpleWitness('test-witness');
       
       const outcome = {
         type: 'test',
@@ -71,16 +71,16 @@ describe('Simple Oracle System Tests', () => {
         confidence: 0.8
       };
 
-      await oracle.recordOutcome('test-judgment-id', outcome);
+      await witness.recordOutcome('test-judgment-id', outcome);
       
-      const stats = oracle.getStatistics();
+      const stats = witness.getStatistics();
       expect(stats).toBeDefined();
-      expect(stats.oracleId).toBe('test-oracle');
+      expect(stats.witnessId).toBe('test-witness');
       expect(stats.totalOutcomes).toBe(1);
     });
 
     it('should retrieve recorded outcome', async () => {
-      const oracle = new SimpleOracle('test-oracle');
+      const witness = new SimpleWitness('test-witness');
       
       const outcome = {
         type: 'test',
@@ -88,28 +88,28 @@ describe('Simple Oracle System Tests', () => {
         confidence: 0.8
       };
 
-      await oracle.recordOutcome('test-judgment-id', outcome);
+      await witness.recordOutcome('test-judgment-id', outcome);
       
-      const retrieved = await oracle.getOutcome('test-judgment-id');
+      const retrieved = await witness.getOutcome('test-judgment-id');
       expect(retrieved).toBeDefined();
       expect(retrieved.type).toBe('test');
       expect(retrieved.result).toBe('success');
     });
   });
 
-  describe('TradingOracle', () => {
-    it('should create trading oracle successfully', () => {
-      const oracle = createTradingOracle('trading-oracle');
-      expect(oracle).toBeDefined();
-      expect(oracle.oracleId).toBe('trading-oracle');
+  describe('TradingWitness', () => {
+    it('should create trading witness successfully', () => {
+      const witness = createTradingWitness('trading-witness');
+      expect(witness).toBeDefined();
+      expect(witness.witnessId).toBe('trading-witness');
     });
 
     it('should record trade successfully', async () => {
-      const oracle = createTradingOracle('trading-oracle');
+      const witness = createTradingWitness('trading-witness');
       
-      await expect(oracle.recordTrade('trade-1', 'BTC/USDT', 500)).resolves.not.toThrow();
+      await expect(witness.recordTrade('trade-1', 'BTC/USDT', 500)).resolves.not.toThrow();
       
-      const outcome = await oracle.getOutcome('trade-1');
+      const outcome = await witness.getOutcome('trade-1');
       expect(outcome).toBeDefined();
       expect(outcome.pair).toBe('BTC/USDT');
       expect(outcome.profit).toBe(500);
@@ -117,19 +117,19 @@ describe('Simple Oracle System Tests', () => {
     });
   });
 
-  describe('MedicalOracle', () => {
-    it('should create medical oracle successfully', () => {
-      const oracle = createMedicalOracle('medical-oracle');
-      expect(oracle).toBeDefined();
-      expect(oracle.oracleId).toBe('medical-oracle');
+  describe('MedicalWitness', () => {
+    it('should create medical witness successfully', () => {
+      const witness = createMedicalWitness('medical-witness');
+      expect(witness).toBeDefined();
+      expect(witness.witnessId).toBe('medical-witness');
     });
 
     it('should record treatment successfully', async () => {
-      const oracle = createMedicalOracle('medical-oracle');
+      const witness = createMedicalWitness('medical-witness');
       
-      await expect(oracle.recordTreatment('treatment-1', 'hypertension', true)).resolves.not.toThrow();
+      await expect(witness.recordTreatment('treatment-1', 'hypertension', true)).resolves.not.toThrow();
       
-      const outcome = await oracle.getOutcome('treatment-1');
+      const outcome = await witness.getOutcome('treatment-1');
       expect(outcome).toBeDefined();
       expect(outcome.condition).toBe('hypertension');
       expect(outcome.success).toBe(true);

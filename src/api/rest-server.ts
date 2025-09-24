@@ -1,8 +1,8 @@
 /**
- * OpenTrust Protocol Oracle - REST API Server
+ * OpenTrust Protocol Witness - REST API Server
  * 
  * Production-ready REST API with Express.js, authentication,
- * rate limiting, and comprehensive Oracle operations.
+ * rate limiting, and comprehensive Witness operations.
  * 
  * @version 4.0.0
  * @author OpenTrust Protocol Team
@@ -16,12 +16,12 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import jwt from 'jsonwebtoken';
 
-import { EnhancedOracle } from '../oracle/EnhancedOracle';
+import { EnhancedWitness } from '../witness/EnhancedWitness';
 import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
 import { PostgreSQLStorage } from '../storage/PostgreSQLStorage';
 import { OTPAnalyticsEngine } from '../analytics/OTPAnalyticsEngine';
 import { MLPredictiveEngine } from '../ml/MLPredictiveEngine';
-import { OracleConfig } from '../types/index';
+import { WitnessConfig } from '../types/index';
 
 export interface APIConfig {
   port: number;
@@ -39,14 +39,14 @@ export interface APIConfig {
   };
 }
 
-export class OracleAPIServer {
+export class WitnessAPIServer {
   private app: express.Application;
   private config: APIConfig;
   private storage: PostgreSQLStorage;
   private dashboard: PerformanceDashboard;
   private analytics: OTPAnalyticsEngine;
   private mlEngine: MLPredictiveEngine;
-  private oracles: Map<string, EnhancedOracle> = new Map();
+  private witnesss: Map<string, EnhancedWitness> = new Map();
   private server: any;
 
   constructor(config: APIConfig) {
@@ -76,7 +76,7 @@ export class OracleAPIServer {
 
       // Start server
       this.server = this.app.listen(this.config.port, () => {
-        console.log(`🚀 Oracle API Server running on port ${this.config.port}`);
+        console.log(`🚀 Witness API Server running on port ${this.config.port}`);
         console.log(`📚 API Documentation: http://localhost:${this.config.port}/api-docs`);
         console.log(`🔗 Health Check: http://localhost:${this.config.port}/health`);
       });
@@ -100,7 +100,7 @@ export class OracleAPIServer {
     }
     await this.storage.close();
     this.dashboard.stopMonitoring();
-    console.log('🛑 Oracle API Server stopped');
+    console.log('🛑 Witness API Server stopped');
   }
 
   private setupMiddleware(): void {
@@ -147,40 +147,40 @@ export class OracleAPIServer {
     });
 
     // API routes
-    this.setupOracleRoutes();
+    this.setupWitnessRoutes();
     this.setupDashboardRoutes();
     this.setupStorageRoutes();
   }
 
-  private setupOracleRoutes(): void {
+  private setupWitnessRoutes(): void {
     const router = express.Router();
 
-    // Create Oracle
-    router.post('/oracles', this.authenticateToken, async (req, res) => {
+    // Create Witness
+    router.post('/witnesss', this.authenticateToken, async (req, res) => {
       try {
-        const config: OracleConfig = req.body;
+        const config: WitnessConfig = req.body;
         
-        if (!config.oracleId || !config.version || !config.description) {
+        if (!config.witnessId || !config.version || !config.description) {
           res.status(400).json({
-            error: 'Missing required fields: oracleId, version, description'
+            error: 'Missing required fields: witnessId, version, description'
           });
           return;
         }
 
-        if (this.oracles.has(config.oracleId)) {
+        if (this.witnesss.has(config.witnessId)) {
           res.status(409).json({
-            error: `Oracle with ID '${config.oracleId}' already exists`
+            error: `Witness with ID '${config.witnessId}' already exists`
           });
           return;
         }
 
-        const oracle = new EnhancedOracle(config, this.storage);
-        this.oracles.set(config.oracleId, oracle);
-        this.dashboard.registerOracle(oracle);
+        const witness = new EnhancedWitness(config, this.storage);
+        this.witnesss.set(config.witnessId, witness);
+        this.dashboard.registerWitness(witness);
 
         res.status(201).json({
-          message: 'Oracle created successfully',
-          oracleId: config.oracleId,
+          message: 'Witness created successfully',
+          witnessId: config.witnessId,
           config
         });
       } catch (error: any) {
@@ -188,37 +188,37 @@ export class OracleAPIServer {
       }
     });
 
-    // Get Oracle
-    router.get('/oracles/:oracleId', this.authenticateToken, async (req, res) => {
+    // Get Witness
+    router.get('/witnesss/:witnessId', this.authenticateToken, async (req, res) => {
       try {
-        const oracleId = req.params['oracleId'];
-        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
+        const witnessId = req.params['witnessId'];
+        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
 
-        if (!oracle) {
+        if (!witness) {
           res.status(404).json({
-            error: `Oracle '${oracleId}' not found`
+            error: `Witness '${witnessId}' not found`
           });
           return;
         }
 
-        const status = await oracle.getOracleStatus();
+        const status = await witness.getWitnessStatus();
         res.json(status);
       } catch (error: any) {
         res.status(500).json({ error: error.message });
       }
     });
 
-    // List Oracles
-    router.get('/oracles', this.authenticateToken, async (_req, res) => {
+    // List Witnesss
+    router.get('/witnesss', this.authenticateToken, async (_req, res) => {
       try {
-        const oraclesList = Array.from(this.oracles.keys()).map(oracleId => ({
-          oracleId,
+        const witnesssList = Array.from(this.witnesss.keys()).map(witnessId => ({
+          witnessId,
           registered: true
         }));
 
         res.json({
-          oracles: oraclesList,
-          total: oraclesList.length
+          witnesss: witnesssList,
+          total: witnesssList.length
         });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -226,15 +226,15 @@ export class OracleAPIServer {
     });
 
     // Record Outcome
-    router.post('/oracles/:oracleId/outcomes', this.authenticateToken, async (req, res) => {
+    router.post('/witnesss/:witnessId/outcomes', this.authenticateToken, async (req, res) => {
       try {
-        const oracleId = req.params['oracleId'];
+        const witnessId = req.params['witnessId'];
         const { decision, outcome, context } = req.body;
 
-        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
-        if (!oracle) {
+        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
+        if (!witness) {
           res.status(404).json({
-            error: `Oracle '${oracleId}' not found`
+            error: `Witness '${witnessId}' not found`
           });
           return;
         }
@@ -247,11 +247,11 @@ export class OracleAPIServer {
           return;
         }
 
-        await oracle.recordOutcome(decision, outcome, context);
+        await witness.recordOutcome(decision, outcome, context);
 
         res.status(201).json({
           message: 'Outcome recorded successfully',
-          oracleId,
+          witnessId,
           decisionId: decision.judgment_id,
           outcomeId: outcome.judgment_id
         });
@@ -260,20 +260,20 @@ export class OracleAPIServer {
       }
     });
 
-    // Get Oracle Metrics
-    router.get('/oracles/:oracleId/metrics', this.authenticateToken, async (req, res) => {
+    // Get Witness Metrics
+    router.get('/witnesss/:witnessId/metrics', this.authenticateToken, async (req, res) => {
       try {
-        const oracleId = req.params['oracleId'];
-        const oracle = oracleId ? this.oracles.get(oracleId) : undefined;
+        const witnessId = req.params['witnessId'];
+        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
 
-        if (!oracle) {
+        if (!witness) {
           res.status(404).json({
-            error: `Oracle '${oracleId}' not found`
+            error: `Witness '${witnessId}' not found`
           });
           return;
         }
 
-        const metrics = await oracle.getRealTimeMetrics();
+        const metrics = await witness.getRealTimeMetrics();
         res.json(metrics);
       } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -289,11 +289,11 @@ export class OracleAPIServer {
     // Get Calibration Metrics
     router.get('/metrics/calibration', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId, timeRange, context } = req.query;
+        const { witnessId, timeRange, context } = req.query;
         
         let pairs;
-        if (oracleId) {
-          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        if (witnessId) {
+          pairs = await this.storage.getPairsByWitness(witnessId as string);
         } else {
           const timeRangeStr = timeRange as string;
           const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
@@ -312,11 +312,11 @@ export class OracleAPIServer {
     // Get VoI Metrics
     router.get('/metrics/voi', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId, timeRange, context } = req.query;
+        const { witnessId, timeRange, context } = req.query;
         
         let pairs;
-        if (oracleId) {
-          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        if (witnessId) {
+          pairs = await this.storage.getPairsByWitness(witnessId as string);
         } else {
           const timeRangeStr = timeRange as string;
           const startDate = timeRangeStr ? new Date(timeRangeStr.split(',')[0]!) : undefined;
@@ -358,13 +358,13 @@ export class OracleAPIServer {
     });
 
     // Get Comprehensive Performance Analysis
-    router.get('/metrics/performance/:oracleId', this.authenticateToken, async (req, res) => {
+    router.get('/metrics/performance/:witnessId', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId } = req.params;
+        const { witnessId } = req.params;
         const { timeRange } = req.query;
         
-        if (!oracleId) {
-          res.status(400).json({ error: 'Oracle ID is required' });
+        if (!witnessId) {
+          res.status(400).json({ error: 'Witness ID is required' });
           return;
         }
         
@@ -377,10 +377,10 @@ export class OracleAPIServer {
         if (timeRangeObj) {
           pairs = await this.storage.getJudgmentPairs(timeRangeObj);
         } else {
-          pairs = await this.storage.getPairsByOracle(oracleId);
+          pairs = await this.storage.getPairsByWitness(witnessId);
         }
         
-        const analysis = await this.analytics.analyzePerformance(oracleId, pairs);
+        const analysis = await this.analytics.analyzePerformance(witnessId, pairs);
         res.json(analysis);
       } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -429,7 +429,7 @@ export class OracleAPIServer {
     // Train ML Models
     router.post('/ml/train', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId, timeRange } = req.body;
+        const { witnessId, timeRange } = req.body;
         
         // Get judgment pairs for training
         const timeRangeObj = timeRange ? {
@@ -437,7 +437,7 @@ export class OracleAPIServer {
           end: new Date(timeRange.end)
         } : undefined;
         
-        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, witnessId || '');
         
         if (pairs.length === 0) {
           return res.status(400).json({ error: 'No judgment pairs found for training' });
@@ -459,16 +459,16 @@ export class OracleAPIServer {
     // Generate Prediction
     router.post('/ml/predict', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId, judgment, predictionType, context } = req.body;
+        const { witnessId, judgment, predictionType, context } = req.body;
         
-        if (!oracleId || !judgment || !predictionType) {
+        if (!witnessId || !judgment || !predictionType) {
           return res.status(400).json({ 
-            error: 'Missing required fields: oracleId, judgment, predictionType' 
+            error: 'Missing required fields: witnessId, judgment, predictionType' 
           });
         }
 
         const prediction = await this.mlEngine.generatePrediction(
-          oracleId,
+          witnessId,
           judgment,
           predictionType,
           context
@@ -480,14 +480,14 @@ export class OracleAPIServer {
       }
     });
 
-    // Get Predictions for Oracle
-    router.get('/ml/predictions/:oracleId', this.authenticateToken, async (req, res) => {
+    // Get Predictions for Witness
+    router.get('/ml/predictions/:witnessId', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId } = req.params;
-        const predictions = this.mlEngine.getPredictions(oracleId || '');
+        const { witnessId } = req.params;
+        const predictions = this.mlEngine.getPredictions(witnessId || '');
         
         res.json({
-          oracle_id: oracleId,
+          witness_id: witnessId,
           predictions,
           total: predictions.length
         });
@@ -497,9 +497,9 @@ export class OracleAPIServer {
     });
 
     // Analyze Trends
-    router.get('/ml/trends/:oracleId', this.authenticateToken, async (req, res) => {
+    router.get('/ml/trends/:witnessId', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId } = req.params;
+        const { witnessId } = req.params;
         const { timeRange } = req.query;
         
         // Get judgment pairs for trend analysis
@@ -508,13 +508,13 @@ export class OracleAPIServer {
           end: new Date((timeRange as string).split(',')[1]!)
         } : undefined;
         
-        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, witnessId || '');
         
         if (pairs.length < 2) {
           return res.status(400).json({ error: 'Insufficient data for trend analysis' });
         }
 
-        const trendAnalysis = await this.mlEngine.analyzeTrends(pairs, oracleId || '');
+        const trendAnalysis = await this.mlEngine.analyzeTrends(pairs, witnessId || '');
         
         return res.json(trendAnalysis);
       } catch (error: any) {
@@ -523,9 +523,9 @@ export class OracleAPIServer {
     });
 
     // Generate Alerts
-    router.get('/ml/alerts/:oracleId', this.authenticateToken, async (req, res) => {
+    router.get('/ml/alerts/:witnessId', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId } = req.params;
+        const { witnessId } = req.params;
         const { timeRange } = req.query;
         
         // Get judgment pairs for alert generation
@@ -534,12 +534,12 @@ export class OracleAPIServer {
           end: new Date((timeRange as string).split(',')[1]!)
         } : undefined;
         
-        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, oracleId || '');
+        const pairs = await this.storage.getJudgmentPairs(timeRangeObj, witnessId || '');
         
-        const alerts = await this.mlEngine.generateAlerts(pairs, oracleId || '');
+        const alerts = await this.mlEngine.generateAlerts(pairs, witnessId || '');
         
         res.json({
-          oracle_id: oracleId,
+          witness_id: witnessId,
           alerts,
           total: alerts.length
         });
@@ -564,19 +564,19 @@ export class OracleAPIServer {
     // Get All Alerts
     router.get('/ml/alerts', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId } = req.query;
+        const { witnessId } = req.query;
         
-        if (oracleId) {
-          const alerts = this.mlEngine.getAlerts(oracleId as string);
+        if (witnessId) {
+          const alerts = this.mlEngine.getAlerts(witnessId as string);
           res.json({
-            oracle_id: oracleId,
+            witness_id: witnessId,
             alerts,
             total: alerts.length
           });
         } else {
-          // Get alerts for all oracles
+          // Get alerts for all witnesss
           const allAlerts = Array.from(this.mlEngine.getAlerts('')).concat(
-            ...Array.from(this.oracles.keys()).map(id => this.mlEngine.getAlerts(id))
+            ...Array.from(this.witnesss.keys()).map(id => this.mlEngine.getAlerts(id))
           );
           
           res.json({
@@ -644,18 +644,18 @@ export class OracleAPIServer {
     // Get Storage Pairs
     router.get('/storage/pairs', this.authenticateToken, async (req, res) => {
       try {
-        const { oracleId, judgmentId } = req.query;
+        const { witnessId, judgmentId } = req.query;
         
-        if (!oracleId && !judgmentId) {
+        if (!witnessId && !judgmentId) {
           res.status(400).json({
-            error: 'At least one query parameter is required: oracleId or judgmentId'
+            error: 'At least one query parameter is required: witnessId or judgmentId'
           });
           return;
         }
 
         let pairs;
-        if (oracleId) {
-          pairs = await this.storage.getPairsByOracle(oracleId as string);
+        if (witnessId) {
+          pairs = await this.storage.getPairsByWitness(witnessId as string);
         } else if (judgmentId) {
           pairs = await this.storage.getPairsByJudgmentId(judgmentId as string);
         }
@@ -700,9 +700,9 @@ export class OracleAPIServer {
       definition: {
         openapi: '3.0.0',
         info: {
-          title: 'OpenTrust Protocol Oracle API',
+          title: 'OpenTrust Protocol Witness API',
           version: '4.0.0',
-          description: 'Production-ready REST API for Oracle operations with Analytics and Dashboard',
+          description: 'Production-ready REST API for Witness operations with Analytics and Dashboard',
         },
         servers: [
           {

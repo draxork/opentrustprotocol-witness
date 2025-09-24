@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - ML Predictive Engine Demo
+ * OpenTrust Protocol Witness - ML Predictive Engine Demo
  * 
  * Comprehensive demonstration of Machine Learning capabilities
  * including predictions, trend analysis, and alert generation.
@@ -8,8 +8,8 @@
 const { 
   MLPredictiveEngine, 
   MemoryStorage, 
-  createTradingOracle, 
-  createMedicalOracle 
+  createTradingWitness, 
+  createMedicalWitness 
 } = require('../dist/index.js');
 
 // Define OutcomeType locally
@@ -24,13 +24,13 @@ const OutcomeType = {
 };
 
 async function mlDemo() {
-  console.log('🧠 OpenTrust Protocol Oracle - ML Predictive Engine Demo\n');
+  console.log('🧠 OpenTrust Protocol Witness - ML Predictive Engine Demo\n');
 
   // Initialize components
   const mlEngine = new MLPredictiveEngine();
   const storage = new MemoryStorage();
-  const tradingOracle = createTradingOracle('ml-demo-trading-oracle');
-  const medicalOracle = createMedicalOracle('ml-demo-medical-oracle');
+  const tradingWitness = createTradingWitness('ml-demo-trading-witness');
+  const medicalWitness = createMedicalWitness('ml-demo-medical-witness');
 
   console.log('📊 Phase 1: Recording Historical Data for ML Training\n');
 
@@ -49,7 +49,7 @@ async function mlDemo() {
   ];
 
   for (const data of historicalTradingData) {
-    await tradingOracle.recordTrade(data.judgmentId, data.pair, data.profit);
+    await tradingWitness.recordTrade(data.judgmentId, data.pair, data.profit);
   }
 
   // Record historical medical outcomes
@@ -67,7 +67,7 @@ async function mlDemo() {
   ];
 
   for (const data of historicalMedicalData) {
-    await medicalOracle.recordTreatment(data.judgmentId, data.condition, data.success);
+    await medicalWitness.recordTreatment(data.judgmentId, data.condition, data.success);
   }
 
   console.log('✅ Recorded 20 historical outcomes (10 trading + 10 medical)\n');
@@ -93,7 +93,7 @@ async function mlDemo() {
           outcome_type: OutcomeType.TRADING_SUCCESS
         },
         timestamp: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-        oracle_source: 'ml-demo-trading-oracle'
+        witness_source: 'ml-demo-trading-witness'
       }
     },
     {
@@ -112,7 +112,7 @@ async function mlDemo() {
           outcome_type: OutcomeType.TRADING_FAILURE
         },
         timestamp: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-        oracle_source: 'ml-demo-trading-oracle'
+        witness_source: 'ml-demo-trading-witness'
       }
     },
     // Medical pairs
@@ -132,7 +132,7 @@ async function mlDemo() {
           outcome_type: OutcomeType.MEDICAL_SUCCESS
         },
         timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        oracle_source: 'ml-demo-medical-oracle'
+        witness_source: 'ml-demo-medical-witness'
       }
     },
     {
@@ -151,7 +151,7 @@ async function mlDemo() {
           outcome_type: OutcomeType.MEDICAL_FAILURE
         },
         timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-        oracle_source: 'ml-demo-medical-oracle'
+        witness_source: 'ml-demo-medical-witness'
       }
     }
   ];
@@ -172,26 +172,26 @@ async function mlDemo() {
     {
       judgment: { T: 0.85, I: 0.1, F: 0.05, provenance_chain: [] },
       context: { pair: 'BTC/USDT' },
-      oracleId: 'ml-demo-trading-oracle'
+      witnessId: 'ml-demo-trading-witness'
     },
     {
       judgment: { T: 0.75, I: 0.15, F: 0.1, provenance_chain: [] },
       context: { condition: 'hypertension' },
-      oracleId: 'ml-demo-medical-oracle'
+      witnessId: 'ml-demo-medical-witness'
     }
   ];
 
-  for (const { judgment, context, oracleId } of newJudgments) {
+  for (const { judgment, context, witnessId } of newJudgments) {
     try {
       // Success probability prediction
       const successPrediction = await mlEngine.generatePrediction(
-        oracleId,
+        witnessId,
         judgment,
         'success_probability',
         context
       );
 
-      console.log(`📈 Success Probability Prediction for ${oracleId}:`);
+      console.log(`📈 Success Probability Prediction for ${witnessId}:`);
       console.log(`   • Prediction ID: ${successPrediction.prediction_id}`);
       console.log(`   • Predicted T: ${(successPrediction.predicted_outcome.T * 100).toFixed(1)}%`);
       console.log(`   • Predicted I: ${(successPrediction.predicted_outcome.I * 100).toFixed(1)}%`);
@@ -201,13 +201,13 @@ async function mlDemo() {
 
       // Performance trend prediction
       const trendPrediction = await mlEngine.generatePrediction(
-        oracleId,
+        witnessId,
         judgment,
         'performance_trend',
         context
       );
 
-      console.log(`📊 Performance Trend Prediction for ${oracleId}:`);
+      console.log(`📊 Performance Trend Prediction for ${witnessId}:`);
       console.log(`   • Prediction ID: ${trendPrediction.prediction_id}`);
       console.log(`   • Predicted T: ${(trendPrediction.predicted_outcome.T * 100).toFixed(1)}%`);
       console.log(`   • Predicted I: ${(trendPrediction.predicted_outcome.I * 100).toFixed(1)}%`);
@@ -215,16 +215,16 @@ async function mlDemo() {
       console.log(`   • Confidence: ${(trendPrediction.predicted_outcome.confidence * 100).toFixed(1)}%\n`);
 
     } catch (error) {
-      console.log(`❌ Prediction Error for ${oracleId}: ${error.message}\n`);
+      console.log(`❌ Prediction Error for ${witnessId}: ${error.message}\n`);
     }
   }
 
   console.log('📈 Phase 4: Trend Analysis\n');
 
-  // Analyze trends for trading oracle
+  // Analyze trends for trading witness
   try {
-    const tradingTrends = await mlEngine.analyzeTrends(samplePairs, 'ml-demo-trading-oracle');
-    console.log('📊 Trading Oracle Trend Analysis:');
+    const tradingTrends = await mlEngine.analyzeTrends(samplePairs, 'ml-demo-trading-witness');
+    console.log('📊 Trading Witness Trend Analysis:');
     console.log(`   • Trend Type: ${tradingTrends.trend_type}`);
     console.log(`   • Confidence: ${(tradingTrends.confidence * 100).toFixed(1)}%`);
     console.log(`   • Slope: ${tradingTrends.slope.toFixed(4)}`);
@@ -237,10 +237,10 @@ async function mlDemo() {
 
   console.log('🚨 Phase 5: Predictive Alerts\n');
 
-  // Generate alerts for trading oracle
+  // Generate alerts for trading witness
   try {
-    const tradingAlerts = await mlEngine.generateAlerts(samplePairs, 'ml-demo-trading-oracle');
-    console.log('🚨 Trading Oracle Alerts:');
+    const tradingAlerts = await mlEngine.generateAlerts(samplePairs, 'ml-demo-trading-witness');
+    console.log('🚨 Trading Witness Alerts:');
     if (tradingAlerts.length === 0) {
       console.log('   • No alerts generated - system operating normally\n');
     } else {
@@ -274,7 +274,7 @@ async function mlDemo() {
   const stats = await storage.getStorageStats();
   console.log('💾 Memory Storage Statistics:');
   console.log(`   • Total Pairs: ${stats.totalPairs}`);
-  console.log(`   • Oracle Count: ${stats.oracleCount}`);
+  console.log(`   • Witness Count: ${stats.witnessCount}`);
   console.log(`   • Memory Usage: ${(stats.memoryUsage / 1024).toFixed(2)} KB`);
 
   console.log('\n🎉 ML Predictive Engine Demo Completed Successfully!');

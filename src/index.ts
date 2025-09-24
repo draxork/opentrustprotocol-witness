@@ -1,17 +1,17 @@
 /**
- * OpenTrust Protocol Oracle - Main Entry Point
+ * OpenTrust Protocol Witness - Main Entry Point
  * 
  * @version 4.0.0
  * @author OpenTrust Protocol Team
  */
 
 // Export all components
-export * from './simple-oracle';
+export * from './simple-witness';
 export * from './analytics/OTPAnalyticsEngine';
 export * from './ml/MLPredictiveEngine';
 export * from './storage/MemoryStorage';
 export * from './storage/PostgreSQLStorage';
-export * from './oracle/EnhancedOracle';
+export * from './witness/EnhancedWitness';
 export * from './dashboard/PerformanceDashboard';
 export * from './api/rest-server';
 export * from './api/websocket-server';
@@ -23,12 +23,12 @@ export const VERSION = '4.0.2';
 
 export const VERSION_INFO = {
   version: VERSION,
-  name: 'OpenTrust Protocol Oracle',
-  description: 'Performance Oracle & Analytics Engine for OpenTrust Protocol',
+  name: 'OpenTrust Protocol Witness',
+  description: 'Performance Witness & Analytics Engine for OpenTrust Protocol',
   author: 'OpenTrust Protocol Team',
   license: 'MIT',
-  repository: 'https://github.com/draxork/opentrustprotocol-oracle',
-  homepage: 'https://github.com/draxork/opentrustprotocol-oracle#readme'
+  repository: 'https://github.com/draxork/opentrustprotocol-witness',
+  homepage: 'https://github.com/draxork/opentrustprotocol-witness#readme'
 };
 
 export function getPackageInfo() {

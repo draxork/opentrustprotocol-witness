@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - Analytics Engine Demo
+ * OpenTrust Protocol Witness - Analytics Engine Demo
  * 
  * Comprehensive demonstration of the Analytics Engine capabilities
  * including performance analysis, calibration metrics, and VoI calculations.
@@ -8,8 +8,8 @@
 const { 
   OTPAnalyticsEngine, 
   MemoryStorage, 
-  createTradingOracle, 
-  createMedicalOracle 
+  createTradingWitness, 
+  createMedicalWitness 
 } = require('../dist/index.js');
 
 // Define OutcomeType locally since it's not exported in the simplified version
@@ -24,13 +24,13 @@ const OutcomeType = {
 };
 
 async function analyticsDemo() {
-  console.log('🚀 OpenTrust Protocol Oracle - Analytics Engine Demo\n');
+  console.log('🚀 OpenTrust Protocol Witness - Analytics Engine Demo\n');
 
   // Initialize components
   const analyticsEngine = new OTPAnalyticsEngine();
   const storage = new MemoryStorage();
-  const tradingOracle = createTradingOracle('demo-trading-oracle');
-  const medicalOracle = createMedicalOracle('demo-medical-oracle');
+  const tradingWitness = createTradingWitness('demo-trading-witness');
+  const medicalWitness = createMedicalWitness('demo-medical-witness');
 
   console.log('📊 Phase 1: Recording Sample Outcomes\n');
 
@@ -44,7 +44,7 @@ async function analyticsDemo() {
   ];
 
   for (const outcome of tradingOutcomes) {
-    await tradingOracle.recordTrade(outcome.judgmentId, outcome.pair, outcome.profit);
+    await tradingWitness.recordTrade(outcome.judgmentId, outcome.pair, outcome.profit);
   }
 
   // Record medical outcomes
@@ -57,7 +57,7 @@ async function analyticsDemo() {
   ];
 
   for (const outcome of medicalOutcomes) {
-    await medicalOracle.recordTreatment(outcome.judgmentId, outcome.condition, outcome.success);
+    await medicalWitness.recordTreatment(outcome.judgmentId, outcome.condition, outcome.success);
   }
 
   console.log('✅ Recorded 10 sample outcomes (5 trading + 5 medical)\n');
@@ -83,7 +83,7 @@ async function analyticsDemo() {
           outcome_type: OutcomeType.TRADING_SUCCESS
         },
         timestamp: new Date().toISOString(),
-        oracle_source: 'demo-trading-oracle'
+        witness_source: 'demo-trading-witness'
       }
     },
     {
@@ -102,7 +102,7 @@ async function analyticsDemo() {
           outcome_type: OutcomeType.TRADING_FAILURE
         },
         timestamp: new Date().toISOString(),
-        oracle_source: 'demo-trading-oracle'
+        witness_source: 'demo-trading-witness'
       }
     },
     // Medical pairs
@@ -122,7 +122,7 @@ async function analyticsDemo() {
           outcome_type: OutcomeType.MEDICAL_SUCCESS
         },
         timestamp: new Date().toISOString(),
-        oracle_source: 'demo-medical-oracle'
+        witness_source: 'demo-medical-witness'
       }
     },
     {
@@ -141,7 +141,7 @@ async function analyticsDemo() {
           outcome_type: OutcomeType.MEDICAL_FAILURE
         },
         timestamp: new Date().toISOString(),
-        oracle_source: 'demo-medical-oracle'
+        witness_source: 'demo-medical-witness'
       }
     }
   ];
@@ -153,32 +153,32 @@ async function analyticsDemo() {
 
   console.log('💾 Stored 4 judgment pairs in memory storage\n');
 
-  // Analyze trading oracle performance
+  // Analyze trading witness performance
   try {
-    const tradingAnalysis = await analyticsEngine.analyzePerformance('demo-trading-oracle', samplePairs);
-    console.log('📊 Trading Oracle Performance Analysis:');
-    console.log(`   • Oracle ID: ${tradingAnalysis.oracle_id}`);
+    const tradingAnalysis = await analyticsEngine.analyzePerformance('demo-trading-witness', samplePairs);
+    console.log('📊 Trading Witness Performance Analysis:');
+    console.log(`   • Witness ID: ${tradingAnalysis.witness_id}`);
     console.log(`   • Total Judgments: ${tradingAnalysis.total_judgments}`);
     console.log(`   • Success Rate: ${(tradingAnalysis.success_rate * 100).toFixed(1)}%`);
     console.log(`   • Performance Grade: ${tradingAnalysis.performance_grade}`);
     console.log(`   • Calibration Score: ${(tradingAnalysis.overall_calibration_score * 100).toFixed(1)}%`);
     console.log(`   • Value of Indeterminacy: ${(tradingAnalysis.value_of_indeterminacy * 100).toFixed(1)}%\n`);
   } catch (error) {
-    console.log(`❌ Trading Oracle Analysis Error: ${error.message}\n`);
+    console.log(`❌ Trading Witness Analysis Error: ${error.message}\n`);
   }
 
-  // Analyze medical oracle performance
+  // Analyze medical witness performance
   try {
-    const medicalAnalysis = await analyticsEngine.analyzePerformance('demo-medical-oracle', samplePairs);
-    console.log('🏥 Medical Oracle Performance Analysis:');
-    console.log(`   • Oracle ID: ${medicalAnalysis.oracle_id}`);
+    const medicalAnalysis = await analyticsEngine.analyzePerformance('demo-medical-witness', samplePairs);
+    console.log('🏥 Medical Witness Performance Analysis:');
+    console.log(`   • Witness ID: ${medicalAnalysis.witness_id}`);
     console.log(`   • Total Judgments: ${medicalAnalysis.total_judgments}`);
     console.log(`   • Success Rate: ${(medicalAnalysis.success_rate * 100).toFixed(1)}%`);
     console.log(`   • Performance Grade: ${medicalAnalysis.performance_grade}`);
     console.log(`   • Calibration Score: ${(medicalAnalysis.overall_calibration_score * 100).toFixed(1)}%`);
     console.log(`   • Value of Indeterminacy: ${(medicalAnalysis.value_of_indeterminacy * 100).toFixed(1)}%\n`);
   } catch (error) {
-    console.log(`❌ Medical Oracle Analysis Error: ${error.message}\n`);
+    console.log(`❌ Medical Witness Analysis Error: ${error.message}\n`);
   }
 
   console.log('🔬 Phase 3: Detailed Metrics Analysis\n');
@@ -214,7 +214,7 @@ async function analyticsDemo() {
   const stats = await storage.getStorageStats();
   console.log('💾 Memory Storage Statistics:');
   console.log(`   • Total Pairs: ${stats.totalPairs}`);
-  console.log(`   • Oracle Count: ${stats.oracleCount}`);
+  console.log(`   • Witness Count: ${stats.witnessCount}`);
   console.log(`   • Timestamp Count: ${stats.timestampCount}`);
   console.log(`   • Memory Usage: ${(stats.memoryUsage / 1024).toFixed(2)} KB`);
   if (stats.oldestTimestamp) {
@@ -231,7 +231,7 @@ async function analyticsDemo() {
   console.log('   ✅ Value of Indeterminacy (VoI) calculations');
   console.log('   ✅ Success rate calculations');
   console.log('   ✅ Memory storage with indexing');
-  console.log('   ✅ Multi-oracle support (Trading & Medical)');
+  console.log('   ✅ Multi-witness support (Trading & Medical)');
   console.log('   ✅ Comprehensive error handling');
 }
 

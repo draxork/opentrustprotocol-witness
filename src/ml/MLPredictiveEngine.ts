@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - ML Predictive Engine
+ * OpenTrust Protocol Witness - ML Predictive Engine
  * 
  * Advanced Machine Learning integration for predictive analytics
  * and outcome forecasting based on historical judgment data.
@@ -9,7 +9,7 @@ import { JudgmentPair, NeutrosophicJudgment } from '../types/index';
 
 export interface MLPrediction {
   prediction_id: string;
-  oracle_id: string;
+  witness_id: string;
   predicted_outcome: {
     T: number;
     I: number;
@@ -56,7 +56,7 @@ export interface TrendAnalysis {
 
 export interface PredictiveAlert {
   alert_id: string;
-  oracle_id: string;
+  witness_id: string;
   alert_type: 'performance_degradation' | 'anomaly_detected' | 'trend_change' | 'model_drift';
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
@@ -90,7 +90,7 @@ export class MLPredictiveEngine {
       training_data_size: 0,
       accuracy_score: 0.0,
       last_trained: new Date().toISOString(),
-      features: ['T', 'I', 'F', 'time_since_last_outcome', 'oracle_performance_history'],
+      features: ['T', 'I', 'F', 'time_since_last_outcome', 'witness_performance_history'],
       hyperparameters: {
         algorithm: 'logistic_regression',
         regularization: 'l2',
@@ -172,7 +172,7 @@ export class MLPredictiveEngine {
             I: pair.decision.judgment.I,
             F: pair.decision.judgment.F,
             time_since_last_outcome: this.calculateTimeSinceLastOutcome(pair),
-            oracle_performance_history: this.calculateOraclePerformanceHistory(pair)
+            witness_performance_history: this.calculateWitnessPerformanceHistory(pair)
           },
           target: this.isSuccessfulOutcome(pair.outcome.outcome_judgment.outcome_type) ? 1 : 0
         }));
@@ -216,7 +216,7 @@ export class MLPredictiveEngine {
    * Generate prediction for a given judgment
    */
   async generatePrediction(
-    oracleId: string,
+    witnessId: string,
     judgment: NeutrosophicJudgment,
     predictionType: 'success_probability' | 'performance_trend' | 'outcome_forecast',
     context?: Record<string, any>
@@ -233,7 +233,7 @@ export class MLPredictiveEngine {
     
     const mlPrediction: MLPrediction = {
       prediction_id: predictionId,
-      oracle_id: oracleId,
+      witness_id: witnessId,
       predicted_outcome: prediction,
       prediction_type: predictionType,
       model_used: model.model_id,
@@ -319,7 +319,7 @@ export class MLPredictiveEngine {
   /**
    * Analyze performance trends
    */
-  async analyzeTrends(judgmentPairs: JudgmentPair[], _oracleId: string): Promise<TrendAnalysis> {
+  async analyzeTrends(judgmentPairs: JudgmentPair[], _witnessId: string): Promise<TrendAnalysis> {
     const performanceData = this.aggregatePerformanceByTime(judgmentPairs);
     
     if (performanceData.length < 2) {
@@ -345,23 +345,23 @@ export class MLPredictiveEngine {
   /**
    * Generate predictive alerts
    */
-  async generateAlerts(judgmentPairs: JudgmentPair[], oracleId: string): Promise<PredictiveAlert[]> {
+  async generateAlerts(judgmentPairs: JudgmentPair[], witnessId: string): Promise<PredictiveAlert[]> {
     const alerts: PredictiveAlert[] = [];
     
     // Check for performance degradation
-    const performanceAlert = await this.checkPerformanceDegradation(judgmentPairs, oracleId);
+    const performanceAlert = await this.checkPerformanceDegradation(judgmentPairs, witnessId);
     if (performanceAlert) {
       alerts.push(performanceAlert);
     }
 
     // Check for anomalies
-    const anomalyAlert = await this.checkAnomalies(judgmentPairs, oracleId);
+    const anomalyAlert = await this.checkAnomalies(judgmentPairs, witnessId);
     if (anomalyAlert) {
       alerts.push(anomalyAlert);
     }
 
     // Check for trend changes
-    const trendAlert = await this.checkTrendChanges(judgmentPairs, oracleId);
+    const trendAlert = await this.checkTrendChanges(judgmentPairs, witnessId);
     if (trendAlert) {
       alerts.push(trendAlert);
     }
@@ -370,19 +370,19 @@ export class MLPredictiveEngine {
   }
 
   /**
-   * Get all predictions for an oracle
+   * Get all predictions for an witness
    */
-  getPredictions(oracleId: string): MLPrediction[] {
+  getPredictions(witnessId: string): MLPrediction[] {
     return Array.from(this.predictions.values())
-      .filter(pred => pred.oracle_id === oracleId);
+      .filter(pred => pred.witness_id === witnessId);
   }
 
   /**
-   * Get all alerts for an oracle
+   * Get all alerts for an witness
    */
-  getAlerts(oracleId: string): PredictiveAlert[] {
+  getAlerts(witnessId: string): PredictiveAlert[] {
     return Array.from(this.alerts.values())
-      .filter(alert => alert.oracle_id === oracleId);
+      .filter(alert => alert.witness_id === witnessId);
   }
 
   /**
@@ -399,7 +399,7 @@ export class MLPredictiveEngine {
     return (outcomeTime.getTime() - decisionTime.getTime()) / (1000 * 60 * 60); // hours
   }
 
-  private calculateOraclePerformanceHistory(_pair: JudgmentPair): number {
+  private calculateWitnessPerformanceHistory(_pair: JudgmentPair): number {
     // Simplified performance history calculation
     return 0.75 + Math.random() * 0.25;
   }
@@ -533,7 +533,7 @@ export class MLPredictiveEngine {
     return forecast;
   }
 
-  private async checkPerformanceDegradation(judgmentPairs: JudgmentPair[], oracleId: string): Promise<PredictiveAlert | null> {
+  private async checkPerformanceDegradation(judgmentPairs: JudgmentPair[], witnessId: string): Promise<PredictiveAlert | null> {
     // Check for performance degradation
     const recentPairs = judgmentPairs.slice(-10); // Last 10 pairs
     if (recentPairs.length < 5) return null;
@@ -544,7 +544,7 @@ export class MLPredictiveEngine {
     if (recentSuccessRate < historicalSuccessRate - 0.2) {
       return {
         alert_id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        oracle_id: oracleId,
+        witness_id: witnessId,
         alert_type: 'performance_degradation',
         severity: 'high',
         message: `Performance degradation detected: Success rate dropped from ${(historicalSuccessRate * 100).toFixed(1)}% to ${(recentSuccessRate * 100).toFixed(1)}%`,
@@ -567,7 +567,7 @@ export class MLPredictiveEngine {
     return null;
   }
 
-  private async checkAnomalies(judgmentPairs: JudgmentPair[], oracleId: string): Promise<PredictiveAlert | null> {
+  private async checkAnomalies(judgmentPairs: JudgmentPair[], witnessId: string): Promise<PredictiveAlert | null> {
     // Check for anomalies in judgment patterns
     const recentPairs = judgmentPairs.slice(-5);
     if (recentPairs.length < 3) return null;
@@ -580,7 +580,7 @@ export class MLPredictiveEngine {
     if (avgI > 0.8 || avgF > 0.8) {
       return {
         alert_id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        oracle_id: oracleId,
+        witness_id: witnessId,
         alert_type: 'anomaly_detected',
         severity: 'medium',
         message: `Unusual judgment pattern detected: High indeterminacy (${(avgI * 100).toFixed(1)}%) or falsity (${(avgF * 100).toFixed(1)}%)`,
@@ -603,7 +603,7 @@ export class MLPredictiveEngine {
     return null;
   }
 
-  private async checkTrendChanges(judgmentPairs: JudgmentPair[], oracleId: string): Promise<PredictiveAlert | null> {
+  private async checkTrendChanges(judgmentPairs: JudgmentPair[], witnessId: string): Promise<PredictiveAlert | null> {
     // Check for trend changes
     if (judgmentPairs.length < 20) return null;
 
@@ -617,7 +617,7 @@ export class MLPredictiveEngine {
     if (Math.abs(change) > 0.3) {
       return {
         alert_id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        oracle_id: oracleId,
+        witness_id: witnessId,
         alert_type: 'trend_change',
         severity: change > 0 ? 'low' : 'medium',
         message: `Significant trend change detected: Success rate ${change > 0 ? 'increased' : 'decreased'} by ${(Math.abs(change) * 100).toFixed(1)}%`,

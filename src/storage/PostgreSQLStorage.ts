@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - PostgreSQL Storage
+ * OpenTrust Protocol Witness - PostgreSQL Storage
  * 
  * Production-ready PostgreSQL storage implementation with connection pooling,
  * migrations, and advanced querying capabilities.
@@ -75,7 +75,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           outcome_i FLOAT NOT NULL,
           outcome_f FLOAT NOT NULL,
           outcome_type VARCHAR(50) NOT NULL,
-          outcome_oracle_source VARCHAR(255) NOT NULL,
+          outcome_witness_source VARCHAR(255) NOT NULL,
           outcome_timestamp TIMESTAMP NOT NULL,
           outcome_provenance_chain JSONB,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -90,8 +90,8 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
       `);
 
       await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_judgment_pairs_oracle_source 
-        ON judgment_pairs(outcome_oracle_source)
+        CREATE INDEX IF NOT EXISTS idx_judgment_pairs_witness_source 
+        ON judgment_pairs(outcome_witness_source)
       `);
 
       await client.query(`
@@ -109,10 +109,10 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
         ON judgment_pairs(decision_mapper_id)
       `);
 
-      // Create oracle_stats table for caching
+      // Create witness_stats table for caching
       await client.query(`
-        CREATE TABLE IF NOT EXISTS oracle_stats (
-          oracle_id VARCHAR(255) PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS witness_stats (
+          witness_id VARCHAR(255) PRIMARY KEY,
           total_judgments INTEGER DEFAULT 0,
           successful_judgments INTEGER DEFAULT 0,
           average_confidence FLOAT DEFAULT 0,
@@ -151,7 +151,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           decision_timestamp, decision_context, decision_mapper_id,
           outcome_judgment_id, outcome_links_to_judgment_id,
           outcome_t, outcome_i, outcome_f, outcome_type,
-          outcome_oracle_source, outcome_timestamp, outcome_provenance_chain
+          outcome_witness_source, outcome_timestamp, outcome_provenance_chain
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         ON CONFLICT (decision_judgment_id) DO UPDATE SET
           decision_t = EXCLUDED.decision_t,
@@ -166,7 +166,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           outcome_i = EXCLUDED.outcome_i,
           outcome_f = EXCLUDED.outcome_f,
           outcome_type = EXCLUDED.outcome_type,
-          outcome_oracle_source = EXCLUDED.outcome_oracle_source,
+          outcome_witness_source = EXCLUDED.outcome_witness_source,
           outcome_timestamp = EXCLUDED.outcome_timestamp,
           outcome_provenance_chain = EXCLUDED.outcome_provenance_chain,
           updated_at = CURRENT_TIMESTAMP
@@ -186,15 +186,15 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
         pair.outcome.outcome_judgment.I,
         pair.outcome.outcome_judgment.F,
         pair.outcome.outcome_judgment.outcome_type,
-        pair.outcome.oracle_source,
+        pair.outcome.witness_source,
         new Date(pair.outcome.timestamp),
         JSON.stringify(pair.outcome.outcome_judgment.provenance_chain)
       ];
 
       await client.query(insertQuery, values);
 
-      // Update oracle stats
-      await this.updateOracleStats(client, pair.outcome.oracle_source);
+      // Update witness stats
+      await this.updateWitnessStats(client, pair.outcome.witness_source);
 
       await client.query('COMMIT');
     } catch (error) {
@@ -236,9 +236,9 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
   }
 
   /**
-   * Get all judgment pairs for a specific oracle
+   * Get all judgment pairs for a specific witness
    */
-  async getPairsByOracle(oracleId: string): Promise<JudgmentPair[]> {
+  async getPairsByWitness(witnessId: string): Promise<JudgmentPair[]> {
     await this.initialize();
 
     const client = await this.pool.connect();
@@ -246,15 +246,15 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
     try {
       const query = `
         SELECT * FROM judgment_pairs 
-        WHERE outcome_oracle_source = $1
+        WHERE outcome_witness_source = $1
         ORDER BY decision_timestamp DESC
       `;
 
-      const result: QueryResult = await client.query(query, [oracleId]);
+      const result: QueryResult = await client.query(query, [witnessId]);
       
       return result.rows.map(row => this.mapRowToJudgmentPair(row));
     } catch (error) {
-      console.error('Failed to get pairs by oracle:', error);
+      console.error('Failed to get pairs by witness:', error);
       throw error;
     } finally {
       client.release();
@@ -382,12 +382,12 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
       const totalResult = await client.query('SELECT COUNT(*) as count FROM judgment_pairs');
       const totalPairs = parseInt(totalResult.rows[0].count);
 
-      // Get oracle count
-      const oracleResult = await client.query(`
-        SELECT COUNT(DISTINCT outcome_oracle_source) as count 
+      // Get witness count
+      const witnessResult = await client.query(`
+        SELECT COUNT(DISTINCT outcome_witness_source) as count 
         FROM judgment_pairs
       `);
-      const oracleCount = parseInt(oracleResult.rows[0].count);
+      const witnessCount = parseInt(witnessResult.rows[0].count);
 
       // Get timestamp range
       const timestampResult = await client.query(`
@@ -409,7 +409,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
 
       const result: StorageStats = {
         totalPairs,
-        oracleCount,
+        witnessCount,
         timestampCount,
         memoryUsage,
         ...(oldestTimestamp && { oldestTimestamp }),
@@ -501,7 +501,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
     }
   }
 
-  async getOraclePerformanceStats(oracleId: string): Promise<any> {
+  async getWitnessPerformanceStats(witnessId: string): Promise<any> {
     await this.initialize();
 
     const client = await this.pool.connect();
@@ -517,14 +517,14 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           MIN(decision_timestamp) as first_activity,
           MAX(decision_timestamp) as last_activity
         FROM judgment_pairs 
-        WHERE outcome_oracle_source = $1
+        WHERE outcome_witness_source = $1
       `;
 
-      const result: QueryResult = await client.query(query, [oracleId]);
+      const result: QueryResult = await client.query(query, [witnessId]);
       
       return result.rows[0];
     } catch (error) {
-      console.error('Failed to get oracle performance stats:', error);
+      console.error('Failed to get witness performance stats:', error);
       throw error;
     } finally {
       client.release();
@@ -541,22 +541,22 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
 
   // Private helper methods
 
-  private async updateOracleStats(client: PoolClient, oracleId: string): Promise<void> {
+  private async updateWitnessStats(client: PoolClient, witnessId: string): Promise<void> {
     try {
-      const stats = await this.getOraclePerformanceStats(oracleId);
+      const stats = await this.getWitnessPerformanceStats(witnessId);
       
       if (!stats) {
-        console.warn(`No stats available for oracle ${oracleId}`);
+        console.warn(`No stats available for witness ${witnessId}`);
         return;
       }
       
       await client.query(`
-        INSERT INTO oracle_stats (
-          oracle_id, total_judgments, successful_judgments,
+        INSERT INTO witness_stats (
+          witness_id, total_judgments, successful_judgments,
           average_confidence, average_indeterminacy, last_activity,
           performance_grade, updated_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
-        ON CONFLICT (oracle_id) DO UPDATE SET
+        ON CONFLICT (witness_id) DO UPDATE SET
           total_judgments = EXCLUDED.total_judgments,
           successful_judgments = EXCLUDED.successful_judgments,
           average_confidence = EXCLUDED.average_confidence,
@@ -565,7 +565,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           performance_grade = EXCLUDED.performance_grade,
           updated_at = CURRENT_TIMESTAMP
       `, [
-        oracleId,
+        witnessId,
         parseInt(stats.total_judgments),
         parseInt(stats.successful_judgments),
         parseFloat(stats.average_confidence),
@@ -574,7 +574,7 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
         this.calculatePerformanceGrade(parseFloat(stats.successful_judgments) / parseFloat(stats.total_judgments))
       ]);
     } catch (error) {
-      console.warn('Failed to update oracle stats:', error);
+      console.warn('Failed to update witness stats:', error);
     }
   }
 
@@ -601,11 +601,11 @@ export class PostgreSQLStorage implements JudgmentPairStorage {
           I: parseFloat(row.outcome_i),
           F: parseFloat(row.outcome_f),
           outcome_type: row.outcome_type,
-          oracle_source: row.outcome_oracle_source,
+          witness_source: row.outcome_witness_source,
           provenance_chain: row.outcome_provenance_chain || []
         },
         timestamp: row.outcome_timestamp.toISOString(),
-        oracle_source: row.outcome_oracle_source
+        witness_source: row.outcome_witness_source
       }
     };
   }

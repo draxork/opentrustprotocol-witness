@@ -24,28 +24,28 @@ export class OTPAnalyticsEngine {
   constructor() {}
 
   /**
-   * Comprehensive performance analysis for an oracle
+   * Comprehensive performance analysis for an witness
    */
-  async analyzePerformance(oracleId: string, pairs: JudgmentPair[]): Promise<PerformanceAnalysis> {
-    const oraclePairs = pairs.filter(p => p.outcome.oracle_source === oracleId);
+  async analyzePerformance(witnessId: string, pairs: JudgmentPair[]): Promise<PerformanceAnalysis> {
+    const witnessPairs = pairs.filter(p => p.outcome.witness_source === witnessId);
     
-    if (oraclePairs.length === 0) {
-      throw new Error(`No judgment pairs found for oracle: ${oracleId}`);
+    if (witnessPairs.length === 0) {
+      throw new Error(`No judgment pairs found for witness: ${witnessId}`);
     }
 
     // Calculate all metrics
-    const calibration = await this.calculateCalibration(oraclePairs);
-    const voi = await this.calculateVoI(oraclePairs);
-    const successRate = this.calculateSuccessRate(oraclePairs);
+    const calibration = await this.calculateCalibration(witnessPairs);
+    const voi = await this.calculateVoI(witnessPairs);
+    const successRate = this.calculateSuccessRate(witnessPairs);
     const performanceGrade = this.calculatePerformanceGrade(calibration.overall_calibration_score, successRate);
 
     // Calculate mapper metrics
-    const mapperIds = [...new Set(oraclePairs.map(p => p.decision.mapper_id).filter(Boolean))];
+    const mapperIds = [...new Set(witnessPairs.map(p => p.decision.mapper_id).filter(Boolean))];
     const metricsByMapper: Record<string, MapperMetrics> = {};
     
     for (const mapperId of mapperIds) {
       if (!mapperId) continue;
-      const mapperPairs = oraclePairs.filter(p => p.decision.mapper_id === mapperId);
+      const mapperPairs = witnessPairs.filter(p => p.decision.mapper_id === mapperId);
       const mapperCalibration = await this.calculateCalibration(mapperPairs);
       const mapperVoI = await this.calculateVoI(mapperPairs);
       
@@ -65,20 +65,20 @@ export class OTPAnalyticsEngine {
     }
 
     // Calculate time-based metrics (monthly)
-    const metricsByTime = await this.calculateTimeMetrics(oraclePairs);
+    const metricsByTime = await this.calculateTimeMetrics(witnessPairs);
 
     // Determine period from data
-    const timestamps = oraclePairs.map(p => new Date(p.decision.timestamp));
+    const timestamps = witnessPairs.map(p => new Date(p.decision.timestamp));
     const startDate = timestamps.length > 0 ? new Date(Math.min(...timestamps.map(d => d.getTime()))) : new Date();
     const endDate = timestamps.length > 0 ? new Date(Math.max(...timestamps.map(d => d.getTime()))) : new Date();
     
     return {
-      oracle_id: oracleId,
+      witness_id: witnessId,
       period: {
         start: startDate.toISOString().split('T')[0]!,
         end: endDate.toISOString().split('T')[0]!
       },
-      total_judgments: oraclePairs.length,
+      total_judgments: witnessPairs.length,
       overall_calibration_score: calibration.overall_calibration_score,
       value_of_indeterminacy: voi.average_voi_contribution,
       success_rate: successRate,

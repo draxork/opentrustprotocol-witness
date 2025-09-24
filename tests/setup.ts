@@ -4,11 +4,11 @@
 
 // Global test configuration
 beforeAll(() => {
-  console.log('🧪 Setting up OpenTrust Protocol Oracle tests...');
+  console.log('🧪 Setting up OpenTrust Protocol Witness tests...');
 });
 
 afterAll(() => {
-  console.log('✅ OpenTrust Protocol Oracle tests completed');
+  console.log('✅ OpenTrust Protocol Witness tests completed');
 });
 
 // Mock console methods for cleaner test output

@@ -1,12 +1,12 @@
 /**
- * OpenTrust Protocol Oracle - Medical Oracle Demo
+ * OpenTrust Protocol Witness - Medical Witness Demo
  * 
- * This example demonstrates how to use the MedicalOracle to track
+ * This example demonstrates how to use the MedicalWitness to track
  * healthcare treatment outcomes and monitor safety.
  */
 
 const {
-  createMedicalOracle,
+  createMedicalWitness,
   createMemoryStorage,
   createAnalyticsEngine
 } = require('../dist/index');
@@ -25,15 +25,15 @@ const mockNeutrosophicJudgment = {
   }]
 };
 
-async function runMedicalOracleDemo() {
-  console.log('🏥 OpenTrust Protocol Oracle - Medical Oracle Demo\n');
+async function runMedicalWitnessDemo() {
+  console.log('🏥 OpenTrust Protocol Witness - Medical Witness Demo\n');
 
   try {
-    // Create storage and oracle
+    // Create storage and witness
     const storage = createMemoryStorage();
-    const oracle = createMedicalOracle('demo-medical-oracle', storage);
+    const witness = createMedicalWitness('demo-medical-witness', storage);
 
-    console.log('✅ Created Medical Oracle:', oracle.config.oracleId);
+    console.log('✅ Created Medical Witness:', witness.config.witnessId);
 
     // Simulate multiple medical treatments
     const treatments = [
@@ -112,7 +112,7 @@ async function runMedicalOracleDemo() {
       };
 
       if (treatment.success) {
-        await oracle.recordSuccessfulTreatment(
+        await witness.recordSuccessfulTreatment(
           judgment,
           medicalContext,
           treatment.recoveryTime,
@@ -120,7 +120,7 @@ async function runMedicalOracleDemo() {
         );
         console.log(`✅ Recorded successful treatment: ${treatment.condition} - Patient: ${treatment.patientId} - Recovery: ${treatment.recoveryTime} days`);
       } else {
-        await oracle.recordFailedTreatment(
+        await witness.recordFailedTreatment(
           judgment,
           medicalContext,
           treatment.failureReason,
@@ -134,7 +134,7 @@ async function runMedicalOracleDemo() {
     console.log('=================================');
 
     // Get medical performance
-    const performance = await oracle.getMedicalPerformance();
+    const performance = await witness.getMedicalPerformance();
     
     console.log(`Total Treatments: ${performance.medical.totalTreatments}`);
     console.log(`Successful Treatments: ${performance.medical.successfulTreatments}`);
@@ -154,7 +154,7 @@ async function runMedicalOracleDemo() {
     console.log(`Failed Treatments: ${performance.safety.failedTreatments}`);
 
     // Get safety alerts
-    const alerts = oracle.getSafetyAlerts();
+    const alerts = witness.getSafetyAlerts();
     if (alerts.length > 0) {
       console.log('\n⚠️ Safety Alerts:');
       console.log('=================');
@@ -181,10 +181,10 @@ async function runMedicalOracleDemo() {
     console.log('\n💾 Storage Statistics:');
     console.log('======================');
     console.log(`Total Pairs: ${stats.totalPairs}`);
-    console.log(`Oracle Count: ${stats.oracleCount}`);
+    console.log(`Witness Count: ${stats.witnessCount}`);
     console.log(`Memory Usage: ${(stats.memoryUsage / 1024).toFixed(2)} KB`);
 
-    console.log('\n🎉 Medical Oracle Demo completed successfully!');
+    console.log('\n🎉 Medical Witness Demo completed successfully!');
 
   } catch (error) {
     console.error('❌ Demo failed:', error.message);
@@ -194,7 +194,7 @@ async function runMedicalOracleDemo() {
 
 // Run the demo
 if (require.main === module) {
-  runMedicalOracleDemo().catch(console.error);
+  runMedicalWitnessDemo().catch(console.error);
 }
 
-module.exports = { runMedicalOracleDemo };
+module.exports = { runMedicalWitnessDemo };

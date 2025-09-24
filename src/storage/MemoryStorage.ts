@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - Memory Storage
+ * OpenTrust Protocol Witness - Memory Storage
  * 
  * In-memory storage implementation for judgment pairs.
  * 
@@ -14,26 +14,26 @@ import {
 
 export class MemoryStorage implements JudgmentPairStorage {
   private storage: Map<string, JudgmentPair> = new Map();
-  private oracleIndex: Map<string, Set<string>> = new Map();
+  private witnessIndex: Map<string, Set<string>> = new Map();
 
   async savePair(pair: JudgmentPair): Promise<void> {
     const key = pair.decision.judgment_id;
     this.storage.set(key, pair);
     
-    // Update oracle index
-    const oracleId = pair.outcome.oracle_source;
-    if (!this.oracleIndex.has(oracleId)) {
-      this.oracleIndex.set(oracleId, new Set());
+    // Update witness index
+    const witnessId = pair.outcome.witness_source;
+    if (!this.witnessIndex.has(witnessId)) {
+      this.witnessIndex.set(witnessId, new Set());
     }
-    this.oracleIndex.get(oracleId)!.add(key);
+    this.witnessIndex.get(witnessId)!.add(key);
   }
 
   async getPair(judgmentId: string): Promise<JudgmentPair | null> {
     return this.storage.get(judgmentId) || null;
   }
 
-  async getPairsByOracle(oracleId: string): Promise<JudgmentPair[]> {
-    const judgmentIds = this.oracleIndex.get(oracleId);
+  async getPairsByWitness(witnessId: string): Promise<JudgmentPair[]> {
+    const judgmentIds = this.witnessIndex.get(witnessId);
     if (!judgmentIds) return [];
     
     return Array.from(judgmentIds)
@@ -91,14 +91,14 @@ export class MemoryStorage implements JudgmentPairStorage {
 
   async getStorageStats(): Promise<StorageStats> {
     const totalPairs = this.storage.size;
-    const oracleCount = this.oracleIndex.size;
+    const witnessCount = this.witnessIndex.size;
     
     const timestamps = Array.from(this.storage.values())
       .map(pair => new Date(pair.decision.timestamp).getTime());
     
     const stats: StorageStats = {
       totalPairs,
-      oracleCount,
+      witnessCount,
       timestampCount: timestamps.length,
       memoryUsage: this.estimateMemoryUsage()
     };
@@ -118,13 +118,13 @@ export class MemoryStorage implements JudgmentPairStorage {
     for (const [key, pair] of this.storage.entries()) {
       const pairTime = new Date(pair.decision.timestamp).getTime();
       if (pairTime < cutoffTime) {
-        // Remove from oracle index
-        const oracleId = pair.outcome.oracle_source;
-        const oracleSet = this.oracleIndex.get(oracleId);
-        if (oracleSet) {
-          oracleSet.delete(key);
-          if (oracleSet.size === 0) {
-            this.oracleIndex.delete(oracleId);
+        // Remove from witness index
+        const witnessId = pair.outcome.witness_source;
+        const witnessSet = this.witnessIndex.get(witnessId);
+        if (witnessSet) {
+          witnessSet.delete(key);
+          if (witnessSet.size === 0) {
+            this.witnessIndex.delete(witnessId);
           }
         }
         

@@ -1,15 +1,15 @@
 /**
- * OpenTrust Protocol Oracle - Production Server Demo
+ * OpenTrust Protocol Witness - Production Server Demo
  * 
- * Complete demonstration of the production-ready Oracle server
+ * Complete demonstration of the production-ready Witness server
  * with PostgreSQL storage, REST API, WebSocket, and Docker.
  */
 
-const { OracleServer, createDefaultConfig } = require('../dist/server.js');
+const { WitnessServer, createDefaultConfig } = require('../dist/server.js');
 const jwt = require('jsonwebtoken');
 
 async function productionServerDemo() {
-  console.log('🚀 OpenTrust Protocol Oracle - Production Server Demo\n');
+  console.log('🚀 OpenTrust Protocol Witness - Production Server Demo\n');
 
   // Create server configuration
   const config = {
@@ -22,7 +22,7 @@ async function productionServerDemo() {
       postgresConfig: {
         host: 'localhost',
         port: 5432,
-        database: 'opentrust_oracle_demo',
+        database: 'opentrust_witness_demo',
         username: 'demo_user',
         password: 'demo_password',
         ssl: false
@@ -36,7 +36,7 @@ async function productionServerDemo() {
     postgres: {
       host: 'localhost',
       port: 5432,
-      database: 'opentrust_oracle_demo',
+      database: 'opentrust_witness_demo',
       username: 'demo_user',
       password: 'demo_password',
       ssl: false,
@@ -54,9 +54,9 @@ async function productionServerDemo() {
 
   try {
     // Create and start the server
-    const server = new OracleServer(config);
+    const server = new WitnessServer(config);
     
-    console.log('🔄 Starting Oracle Server...');
+    console.log('🔄 Starting Witness Server...');
     await server.start();
 
     // Wait a moment for server to fully initialize
@@ -80,17 +80,17 @@ async function productionServerDemo() {
     console.log('\n📚 Available API Endpoints:');
     console.log('   • GET  /health - Health check');
     console.log('   • GET  /api-docs - API documentation');
-    console.log('   • POST /api/oracles - Create Oracle');
-    console.log('   • GET  /api/oracles - List Oracles');
-    console.log('   • GET  /api/oracles/:id/metrics - Get Oracle metrics');
-    console.log('   • POST /api/oracles/:id/outcomes - Record outcome');
+    console.log('   • POST /api/witnesss - Create Witness');
+    console.log('   • GET  /api/witnesss - List Witnesss');
+    console.log('   • GET  /api/witnesss/:id/metrics - Get Witness metrics');
+    console.log('   • POST /api/witnesss/:id/outcomes - Record outcome');
     console.log('   • GET  /api/dashboard/metrics - Dashboard metrics');
     console.log('   • GET  /api/storage/stats - Storage statistics');
 
     console.log('\n🔌 WebSocket Events:');
     console.log('   • subscribe - Subscribe to real-time updates');
     console.log('   • get_metrics - Get current dashboard metrics');
-    console.log('   • get_oracle_metrics - Get specific oracle metrics');
+    console.log('   • get_witness_metrics - Get specific witness metrics');
     console.log('   • ping/pong - Connection health check');
 
     console.log('\n🐳 Docker Deployment:');

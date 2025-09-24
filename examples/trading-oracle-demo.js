@@ -1,12 +1,12 @@
 /**
- * OpenTrust Protocol Oracle - Trading Oracle Demo
+ * OpenTrust Protocol Witness - Trading Witness Demo
  * 
- * This example demonstrates how to use the TradingOracle to track
+ * This example demonstrates how to use the TradingWitness to track
  * financial trading outcomes and analyze performance.
  */
 
 const {
-  createTradingOracle,
+  createTradingWitness,
   createMemoryStorage,
   createAnalyticsEngine
 } = require('../dist/index');
@@ -25,15 +25,15 @@ const mockNeutrosophicJudgment = {
   }]
 };
 
-async function runTradingOracleDemo() {
-  console.log('🚀 OpenTrust Protocol Oracle - Trading Oracle Demo\n');
+async function runTradingWitnessDemo() {
+  console.log('🚀 OpenTrust Protocol Witness - Trading Witness Demo\n');
 
   try {
-    // Create storage and oracle
+    // Create storage and witness
     const storage = createMemoryStorage();
-    const oracle = createTradingOracle('demo-trading-oracle', storage);
+    const witness = createTradingWitness('demo-trading-witness', storage);
 
-    console.log('✅ Created Trading Oracle:', oracle.config.oracleId);
+    console.log('✅ Created Trading Witness:', witness.config.witnessId);
 
     // Simulate multiple trades
     const trades = [
@@ -110,10 +110,10 @@ async function runTradingOracleDemo() {
       };
 
       if (trade.profit > 0) {
-        await oracle.recordSuccessfulTrade(judgment, tradeContext, trade.profit, marketSnapshot);
+        await witness.recordSuccessfulTrade(judgment, tradeContext, trade.profit, marketSnapshot);
         console.log(`✅ Recorded successful trade: ${trade.pair} - Profit: $${trade.profit}`);
       } else {
-        await oracle.recordFailedTrade(judgment, tradeContext, Math.abs(trade.profit), marketSnapshot);
+        await witness.recordFailedTrade(judgment, tradeContext, Math.abs(trade.profit), marketSnapshot);
         console.log(`❌ Recorded failed trade: ${trade.pair} - Loss: $${Math.abs(trade.profit)}`);
       }
     }
@@ -122,7 +122,7 @@ async function runTradingOracleDemo() {
     console.log('================================');
 
     // Get trading performance
-    const performance = await oracle.getTradingPerformance();
+    const performance = await witness.getTradingPerformance();
     
     console.log(`Total Trades: ${performance.trading.totalTrades}`);
     console.log(`Winning Trades: ${performance.trading.winningTrades}`);
@@ -142,10 +142,10 @@ async function runTradingOracleDemo() {
     console.log('\n💾 Storage Statistics:');
     console.log('======================');
     console.log(`Total Pairs: ${stats.totalPairs}`);
-    console.log(`Oracle Count: ${stats.oracleCount}`);
+    console.log(`Witness Count: ${stats.witnessCount}`);
     console.log(`Memory Usage: ${(stats.memoryUsage / 1024).toFixed(2)} KB`);
 
-    console.log('\n🎉 Trading Oracle Demo completed successfully!');
+    console.log('\n🎉 Trading Witness Demo completed successfully!');
 
   } catch (error) {
     console.error('❌ Demo failed:', error.message);
@@ -155,7 +155,7 @@ async function runTradingOracleDemo() {
 
 // Run the demo
 if (require.main === module) {
-  runTradingOracleDemo().catch(console.error);
+  runTradingWitnessDemo().catch(console.error);
 }
 
-module.exports = { runTradingOracleDemo };
+module.exports = { runTradingWitnessDemo };

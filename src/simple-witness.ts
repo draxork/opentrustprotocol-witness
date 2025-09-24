@@ -1,15 +1,15 @@
 /**
- * OpenTrust Protocol Oracle - Simplified Version
+ * OpenTrust Protocol Witness - Simplified Version
  * 
  * @version 1.0.0
  * @author OpenTrust Protocol Team
  */
 
-export class SimpleOracle {
+export class SimpleWitness {
   private data: Map<string, any> = new Map();
 
   constructor(
-    public readonly oracleId: string,
+    public readonly witnessId: string,
     public readonly version: string = '1.0.0'
   ) {}
 
@@ -17,9 +17,9 @@ export class SimpleOracle {
     this.data.set(judgmentId, {
       ...outcome,
       timestamp: new Date().toISOString(),
-      oracleId: this.oracleId
+      witnessId: this.witnessId
     });
-    console.log(`✅ Oracle ${this.oracleId} recorded outcome for judgment ${judgmentId}`);
+    console.log(`✅ Witness ${this.witnessId} recorded outcome for judgment ${judgmentId}`);
   }
 
   async getOutcome(judgmentId: string): Promise<any> {
@@ -29,16 +29,16 @@ export class SimpleOracle {
   getStatistics(): any {
     return {
       totalOutcomes: this.data.size,
-      oracleId: this.oracleId,
+      witnessId: this.witnessId,
       version: this.version,
       lastUpdated: new Date().toISOString()
     };
   }
 }
 
-export class TradingOracle extends SimpleOracle {
-  constructor(oracleId: string) {
-    super(oracleId, '1.0.0');
+export class TradingWitness extends SimpleWitness {
+  constructor(witnessId: string) {
+    super(witnessId, '1.0.0');
   }
 
   async recordTrade(judgmentId: string, pair: string, profit: number): Promise<void> {
@@ -52,9 +52,9 @@ export class TradingOracle extends SimpleOracle {
   }
 }
 
-export class MedicalOracle extends SimpleOracle {
-  constructor(oracleId: string) {
-    super(oracleId, '1.0.0');
+export class MedicalWitness extends SimpleWitness {
+  constructor(witnessId: string) {
+    super(witnessId, '1.0.0');
   }
 
   async recordTreatment(judgmentId: string, condition: string, success: boolean): Promise<void> {
@@ -68,21 +68,21 @@ export class MedicalOracle extends SimpleOracle {
   }
 }
 
-export function createTradingOracle(oracleId: string): TradingOracle {
-  return new TradingOracle(oracleId);
+export function createTradingWitness(witnessId: string): TradingWitness {
+  return new TradingWitness(witnessId);
 }
 
-export function createMedicalOracle(oracleId: string): MedicalOracle {
-  return new MedicalOracle(oracleId);
+export function createMedicalWitness(witnessId: string): MedicalWitness {
+  return new MedicalWitness(witnessId);
 }
 
 export const VERSION = '1.0.0';
 
 export default {
-  SimpleOracle,
-  TradingOracle,
-  MedicalOracle,
-  createTradingOracle,
-  createMedicalOracle,
+  SimpleWitness,
+  TradingWitness,
+  MedicalWitness,
+  createTradingWitness,
+  createMedicalWitness,
   VERSION
 };

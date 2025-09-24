@@ -1,8 +1,8 @@
 /**
- * OpenTrust Protocol Oracle - WebSocket Server
+ * OpenTrust Protocol Witness - WebSocket Server
  * 
  * Real-time WebSocket server for live metrics streaming,
- * dashboard updates, and Oracle performance monitoring.
+ * dashboard updates, and Witness performance monitoring.
  * 
  * @version 4.0.0
  * @author OpenTrust Protocol Team
@@ -11,7 +11,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import jwt from 'jsonwebtoken';
 import { PerformanceDashboard } from '../dashboard/PerformanceDashboard';
-import { EnhancedOracle } from '../oracle/EnhancedOracle';
+import { EnhancedWitness } from '../witness/EnhancedWitness';
 
 export interface WebSocketConfig {
   port: number;
@@ -27,19 +27,19 @@ export interface AuthenticatedWebSocket extends WebSocket {
   };
 }
 
-export class OracleWebSocketServer {
+export class WitnessWebSocketServer {
   private wss: WebSocketServer;
   private config: WebSocketConfig;
   private dashboard: PerformanceDashboard;
-  private oracles: Map<string, EnhancedOracle>;
+  private witnesss: Map<string, EnhancedWitness>;
   private clients: Set<AuthenticatedWebSocket> = new Set();
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private metricsBroadcastInterval: NodeJS.Timeout | null = null;
 
-  constructor(config: WebSocketConfig, dashboard: PerformanceDashboard, oracles: Map<string, EnhancedOracle>) {
+  constructor(config: WebSocketConfig, dashboard: PerformanceDashboard, witnesss: Map<string, EnhancedWitness>) {
     this.config = config;
     this.dashboard = dashboard;
-    this.oracles = oracles;
+    this.witnesss = witnesss;
     this.wss = new WebSocketServer({ port: config.port });
     
     this.setupWebSocketServer();
@@ -122,7 +122,7 @@ export class OracleWebSocketServer {
     // Send welcome message
     this.sendToClient(ws, {
       type: 'welcome',
-      message: 'Connected to OpenTrust Protocol Oracle WebSocket',
+      message: 'Connected to OpenTrust Protocol Witness WebSocket',
       user: ws.user,
       timestamp: new Date().toISOString()
     });
@@ -168,12 +168,12 @@ export class OracleWebSocketServer {
           await this.sendDashboardMetrics(ws);
           break;
           
-        case 'get_oracle_metrics':
-          await this.sendOracleMetrics(ws, message.oracleId);
+        case 'get_witness_metrics':
+          await this.sendWitnessMetrics(ws, message.witnessId);
           break;
           
-        case 'get_oracle_analysis':
-          await this.sendOracleAnalysis(ws, message.oracleId);
+        case 'get_witness_analysis':
+          await this.sendWitnessAnalysis(ws, message.witnessId);
           break;
           
         case 'ping':
@@ -207,8 +207,8 @@ export class OracleWebSocketServer {
       case 'dashboard_metrics':
         await this.sendDashboardMetrics(ws);
         break;
-      case 'all_oracle_metrics':
-        await this.sendAllOracleMetrics(ws);
+      case 'all_witness_metrics':
+        await this.sendAllWitnessMetrics(ws);
         break;
     }
   }
@@ -239,66 +239,66 @@ export class OracleWebSocketServer {
     }
   }
 
-  private async sendOracleMetrics(ws: AuthenticatedWebSocket, oracleId: string): Promise<void> {
+  private async sendWitnessMetrics(ws: AuthenticatedWebSocket, witnessId: string): Promise<void> {
     try {
-      const oracle = this.oracles.get(oracleId);
-      if (!oracle) {
-        this.sendError(ws, `Oracle '${oracleId}' not found`);
+      const witness = this.witnesss.get(witnessId);
+      if (!witness) {
+        this.sendError(ws, `Witness '${witnessId}' not found`);
         return;
       }
 
-      const metrics = await oracle.getRealTimeMetrics();
+      const metrics = await witness.getRealTimeMetrics();
       this.sendToClient(ws, {
-        type: 'oracle_metrics',
-        oracleId,
+        type: 'witness_metrics',
+        witnessId,
         data: metrics,
         timestamp: new Date().toISOString()
       });
     } catch (error: any) {
-      this.sendError(ws, `Failed to get oracle metrics: ${error.message}`);
+      this.sendError(ws, `Failed to get witness metrics: ${error.message}`);
     }
   }
 
-  private async sendOracleAnalysis(ws: AuthenticatedWebSocket, oracleId: string): Promise<void> {
+  private async sendWitnessAnalysis(ws: AuthenticatedWebSocket, witnessId: string): Promise<void> {
     try {
-      const oracle = this.oracles.get(oracleId);
-      if (!oracle) {
-        this.sendError(ws, `Oracle '${oracleId}' not found`);
+      const witness = this.witnesss.get(witnessId);
+      if (!witness) {
+        this.sendError(ws, `Witness '${witnessId}' not found`);
         return;
       }
 
-      const analysis = await oracle.getPerformanceAnalysis();
+      const analysis = await witness.getPerformanceAnalysis();
       this.sendToClient(ws, {
-        type: 'oracle_analysis',
-        oracleId,
+        type: 'witness_analysis',
+        witnessId,
         data: analysis,
         timestamp: new Date().toISOString()
       });
     } catch (error: any) {
-      this.sendError(ws, `Failed to get oracle analysis: ${error.message}`);
+      this.sendError(ws, `Failed to get witness analysis: ${error.message}`);
     }
   }
 
-  private async sendAllOracleMetrics(ws: AuthenticatedWebSocket): Promise<void> {
+  private async sendAllWitnessMetrics(ws: AuthenticatedWebSocket): Promise<void> {
     try {
       const allMetrics = {};
       
-      for (const [oracleId, oracle] of this.oracles) {
+      for (const [witnessId, witness] of this.witnesss) {
         try {
-          const metrics = await oracle.getRealTimeMetrics();
-          (allMetrics as any)[oracleId] = metrics;
+          const metrics = await witness.getRealTimeMetrics();
+          (allMetrics as any)[witnessId] = metrics;
         } catch (error) {
-          console.warn(`Failed to get metrics for oracle ${oracleId}:`, error);
+          console.warn(`Failed to get metrics for witness ${witnessId}:`, error);
         }
       }
 
       this.sendToClient(ws, {
-        type: 'all_oracle_metrics',
+        type: 'all_witness_metrics',
         data: allMetrics,
         timestamp: new Date().toISOString()
       });
     } catch (error: any) {
-      this.sendError(ws, `Failed to get all oracle metrics: ${error.message}`);
+      this.sendError(ws, `Failed to get all witness metrics: ${error.message}`);
     }
   }
 
@@ -331,19 +331,19 @@ export class OracleWebSocketServer {
           timestamp: new Date().toISOString()
         });
 
-        // Broadcast individual oracle metrics
-        for (const [oracleId, oracle] of this.oracles) {
+        // Broadcast individual witness metrics
+        for (const [witnessId, witness] of this.witnesss) {
           try {
-            const oracleMetrics = await oracle.getRealTimeMetrics();
+            const witnessMetrics = await witness.getRealTimeMetrics();
             
-            this.broadcastToSubscribers(`oracle_${oracleId}_metrics`, {
-              type: 'oracle_metrics_update',
-              oracleId,
-              data: oracleMetrics,
+            this.broadcastToSubscribers(`witness_${witnessId}_metrics`, {
+              type: 'witness_metrics_update',
+              witnessId,
+              data: witnessMetrics,
               timestamp: new Date().toISOString()
             });
           } catch (error) {
-            console.warn(`Failed to broadcast metrics for oracle ${oracleId}:`, error);
+            console.warn(`Failed to broadcast metrics for witness ${witnessId}:`, error);
           }
         }
       } catch (error) {

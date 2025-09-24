@@ -1,40 +1,40 @@
 /**
- * OpenTrust Protocol Oracle - Enhanced Oracle + Dashboard Demo
+ * OpenTrust Protocol Witness - Enhanced Witness + Dashboard Demo
  * 
- * Comprehensive demonstration of the integrated Oracle system with
+ * Comprehensive demonstration of the integrated Witness system with
  * Analytics Engine and Performance Dashboard.
  */
 
 const { 
-  EnhancedOracle, 
+  EnhancedWitness, 
   PerformanceDashboard,
   MemoryStorage,
   OutcomeType 
 } = require('../dist/index.js');
 
-async function enhancedOracleDemo() {
-  console.log('🚀 OpenTrust Protocol Oracle - Enhanced System Demo\n');
+async function enhancedWitnessDemo() {
+  console.log('🚀 OpenTrust Protocol Witness - Enhanced System Demo\n');
 
   // Initialize components
   const dashboard = new PerformanceDashboard();
   const storage = new MemoryStorage();
 
-  // Create enhanced oracles
-  const tradingOracle = new EnhancedOracle({
-    oracleId: 'enhanced-trading-oracle',
+  // Create enhanced witnesss
+  const tradingWitness = new EnhancedWitness({
+    witnessId: 'enhanced-trading-witness',
     version: '3.0.0',
-    description: 'Enhanced Trading Oracle with Analytics'
+    description: 'Enhanced Trading Witness with Analytics'
   }, storage);
 
-  const medicalOracle = new EnhancedOracle({
-    oracleId: 'enhanced-medical-oracle',
+  const medicalWitness = new EnhancedWitness({
+    witnessId: 'enhanced-medical-witness',
     version: '3.0.0',
-    description: 'Enhanced Medical Oracle with Analytics'
+    description: 'Enhanced Medical Witness with Analytics'
   }, storage);
 
-  // Register oracles with dashboard
-  dashboard.registerOracle(tradingOracle);
-  dashboard.registerOracle(medicalOracle);
+  // Register witnesss with dashboard
+  dashboard.registerWitness(tradingWitness);
+  dashboard.registerWitness(medicalWitness);
 
   console.log('📊 Phase 1: Recording Enhanced Outcomes\n');
 
@@ -73,7 +73,7 @@ async function enhancedOracleDemo() {
   ];
 
   for (const { decision, outcome, context } of tradingDecisions) {
-    await tradingOracle.recordOutcome(decision, outcome, context);
+    await tradingWitness.recordOutcome(decision, outcome, context);
   }
 
   // Record medical outcomes with enhanced analytics
@@ -111,17 +111,17 @@ async function enhancedOracleDemo() {
   ];
 
   for (const { decision, outcome, context } of medicalDecisions) {
-    await medicalOracle.recordOutcome(decision, outcome, context);
+    await medicalWitness.recordOutcome(decision, outcome, context);
   }
 
   console.log('✅ Recorded 4 enhanced outcomes with analytics integration\n');
 
-  console.log('📈 Phase 2: Enhanced Oracle Analytics\n');
+  console.log('📈 Phase 2: Enhanced Witness Analytics\n');
 
-  // Get real-time metrics from trading oracle
-  const tradingMetrics = await tradingOracle.getRealTimeMetrics();
-  console.log('💰 Enhanced Trading Oracle Metrics:');
-  console.log(`   • Oracle ID: ${tradingMetrics.oracle_id}`);
+  // Get real-time metrics from trading witness
+  const tradingMetrics = await tradingWitness.getRealTimeMetrics();
+  console.log('💰 Enhanced Trading Witness Metrics:');
+  console.log(`   • Witness ID: ${tradingMetrics.witness_id}`);
   console.log(`   • Total Judgments: ${tradingMetrics.total_judgments}`);
   console.log(`   • Success Rate: ${(tradingMetrics.success_rate * 100).toFixed(1)}%`);
   console.log(`   • Average Confidence: ${(tradingMetrics.average_confidence * 100).toFixed(1)}%`);
@@ -129,10 +129,10 @@ async function enhancedOracleDemo() {
   console.log(`   • Performance Grade: ${tradingMetrics.performance_grade}`);
   console.log(`   • Last Updated: ${tradingMetrics.last_updated}\n`);
 
-  // Get real-time metrics from medical oracle
-  const medicalMetrics = await medicalOracle.getRealTimeMetrics();
-  console.log('🏥 Enhanced Medical Oracle Metrics:');
-  console.log(`   • Oracle ID: ${medicalMetrics.oracle_id}`);
+  // Get real-time metrics from medical witness
+  const medicalMetrics = await medicalWitness.getRealTimeMetrics();
+  console.log('🏥 Enhanced Medical Witness Metrics:');
+  console.log(`   • Witness ID: ${medicalMetrics.witness_id}`);
   console.log(`   • Total Judgments: ${medicalMetrics.total_judgments}`);
   console.log(`   • Success Rate: ${(medicalMetrics.success_rate * 100).toFixed(1)}%`);
   console.log(`   • Average Confidence: ${(medicalMetrics.average_confidence * 100).toFixed(1)}%`);
@@ -140,11 +140,11 @@ async function enhancedOracleDemo() {
   console.log(`   • Performance Grade: ${medicalMetrics.performance_grade}`);
   console.log(`   • Last Updated: ${medicalMetrics.last_updated}\n`);
 
-  console.log('🔍 Phase 3: Oracle Status & Health Monitoring\n');
+  console.log('🔍 Phase 3: Witness Status & Health Monitoring\n');
 
-  // Get detailed oracle status
-  const tradingStatus = await tradingOracle.getOracleStatus();
-  console.log('💰 Trading Oracle Status:');
+  // Get detailed witness status
+  const tradingStatus = await tradingWitness.getWitnessStatus();
+  console.log('💰 Trading Witness Status:');
   console.log(`   • Status: ${tradingStatus.status}`);
   console.log(`   • Version: ${tradingStatus.version}`);
   console.log(`   • Uptime: ${tradingStatus.uptime.toFixed(2)} seconds`);
@@ -155,8 +155,8 @@ async function enhancedOracleDemo() {
   console.log(`     - Indeterminacy Trend: ${tradingStatus.performance_indicators.indeterminacy_trend}`);
   console.log(`     - Calibration Quality: ${tradingStatus.performance_indicators.calibration_quality}\n`);
 
-  const medicalStatus = await medicalOracle.getOracleStatus();
-  console.log('🏥 Medical Oracle Status:');
+  const medicalStatus = await medicalWitness.getWitnessStatus();
+  console.log('🏥 Medical Witness Status:');
   console.log(`   • Status: ${medicalStatus.status}`);
   console.log(`   • Version: ${medicalStatus.version}`);
   console.log(`   • Uptime: ${medicalStatus.uptime.toFixed(2)} seconds`);
@@ -173,22 +173,22 @@ async function enhancedOracleDemo() {
   const dashboardMetrics = await dashboard.getCurrentMetrics();
   console.log('📈 Global Dashboard Metrics:');
   console.log(`   • Timestamp: ${dashboardMetrics.timestamp}`);
-  console.log(`   • Total Oracles: ${dashboardMetrics.global_metrics.total_oracles}`);
+  console.log(`   • Total Witnesss: ${dashboardMetrics.global_metrics.total_witnesss}`);
   console.log(`   • Total Judgments: ${dashboardMetrics.global_metrics.total_judgments}`);
   console.log(`   • Average Success Rate: ${(dashboardMetrics.global_metrics.average_success_rate * 100).toFixed(1)}%`);
   console.log(`   • System Health: ${dashboardMetrics.global_metrics.system_health}\n`);
 
-  console.log('🔍 Individual Oracle Dashboard Data:');
-  for (const oracle of dashboardMetrics.oracles) {
-    console.log(`   📊 ${oracle.oracle_id}:`);
-    console.log(`     - Status: ${oracle.status}`);
-    console.log(`     - Performance Grade: ${oracle.performance_grade}`);
-    console.log(`     - Success Rate: ${(oracle.success_rate * 100).toFixed(1)}%`);
-    console.log(`     - Total Judgments: ${oracle.total_judgments}`);
-    console.log(`     - Last Activity: ${oracle.last_activity}`);
-    console.log(`     - Trends: Success ${oracle.trends.success_rate_trend}, Confidence ${oracle.trends.confidence_trend}`);
-    if (oracle.alerts.length > 0) {
-      console.log(`     - Alerts: ${oracle.alerts.join(', ')}`);
+  console.log('🔍 Individual Witness Dashboard Data:');
+  for (const witness of dashboardMetrics.witnesss) {
+    console.log(`   📊 ${witness.witness_id}:`);
+    console.log(`     - Status: ${witness.status}`);
+    console.log(`     - Performance Grade: ${witness.performance_grade}`);
+    console.log(`     - Success Rate: ${(witness.success_rate * 100).toFixed(1)}%`);
+    console.log(`     - Total Judgments: ${witness.total_judgments}`);
+    console.log(`     - Last Activity: ${witness.last_activity}`);
+    console.log(`     - Trends: Success ${witness.trends.success_rate_trend}, Confidence ${witness.trends.confidence_trend}`);
+    if (witness.alerts.length > 0) {
+      console.log(`     - Alerts: ${witness.alerts.join(', ')}`);
     }
     console.log('');
   }
@@ -200,13 +200,13 @@ async function enhancedOracleDemo() {
   console.log('📊 Performance Report:');
   console.log(`   • Report Timestamp: ${report.report_timestamp}`);
   console.log(`   • System Health: ${report.summary.global_metrics.system_health}`);
-  console.log(`   • Total Oracles: ${report.summary.global_metrics.total_oracles}`);
+  console.log(`   • Total Witnesss: ${report.summary.global_metrics.total_witnesss}`);
   console.log(`   • Total Judgments: ${report.summary.global_metrics.total_judgments}`);
   console.log(`   • Average Success Rate: ${(report.summary.global_metrics.average_success_rate * 100).toFixed(1)}%\n`);
 
   console.log('📈 Detailed Analysis:');
   for (const analysis of report.detailed_analysis) {
-    console.log(`   • ${analysis.oracle_id}: ${analysis.status} (${analysis.performance_grade})`);
+    console.log(`   • ${analysis.witness_id}: ${analysis.status} (${analysis.performance_grade})`);
     console.log(`     - Success Rate: ${(analysis.success_rate * 100).toFixed(1)}%`);
     if (analysis.alerts.length > 0) {
       console.log(`     - Alerts: ${analysis.alerts.join(', ')}`);
@@ -222,10 +222,10 @@ async function enhancedOracleDemo() {
 
   console.log('\n📤 Phase 6: Data Export & Backup\n');
 
-  // Export trading oracle data
-  const tradingExport = await tradingOracle.exportData();
-  console.log('💰 Trading Oracle Export:');
-  console.log(`   • Oracle Config: ${tradingExport.oracle_config.oracleId}`);
+  // Export trading witness data
+  const tradingExport = await tradingWitness.exportData();
+  console.log('💰 Trading Witness Export:');
+  console.log(`   • Witness Config: ${tradingExport.witness_config.witnessId}`);
   console.log(`   • Judgment Pairs: ${tradingExport.judgment_pairs.length}`);
   console.log(`   • Export Timestamp: ${tradingExport.export_timestamp}`);
   console.log(`   • Analytics Summary: ${tradingExport.analytics_summary ? 'Available' : 'N/A'}\n`);
@@ -236,22 +236,22 @@ async function enhancedOracleDemo() {
   console.log(`   • Current Metrics: Available`);
   console.log(`   • Metrics History: ${dashboardExport.metrics_history.length} entries`);
   console.log(`   • Trends Data: Available`);
-  console.log(`   • Oracles Config: ${dashboardExport.oracles_config.length} oracles`);
+  console.log(`   • Witnesss Config: ${dashboardExport.witnesss_config.length} witnesss`);
   console.log(`   • Export Timestamp: ${dashboardExport.export_timestamp}\n`);
 
-  console.log('🎉 Enhanced Oracle System Demo Completed Successfully!');
+  console.log('🎉 Enhanced Witness System Demo Completed Successfully!');
   console.log('\n📚 Key Features Demonstrated:');
-  console.log('   ✅ Enhanced Oracle with Analytics Integration');
+  console.log('   ✅ Enhanced Witness with Analytics Integration');
   console.log('   ✅ Real-time Performance Metrics');
-  console.log('   ✅ Oracle Status & Health Monitoring');
+  console.log('   ✅ Witness Status & Health Monitoring');
   console.log('   ✅ Performance Dashboard with Global Metrics');
   console.log('   ✅ Comprehensive Performance Reports');
   console.log('   ✅ Data Export & Backup Capabilities');
-  console.log('   ✅ Multi-Oracle Management');
+  console.log('   ✅ Multi-Witness Management');
   console.log('   ✅ Trend Analysis & Recommendations');
   console.log('   ✅ System Health Assessment');
   console.log('   ✅ End-to-End Integration Testing');
 }
 
 // Run the demo
-enhancedOracleDemo().catch(console.error);
+enhancedWitnessDemo().catch(console.error);

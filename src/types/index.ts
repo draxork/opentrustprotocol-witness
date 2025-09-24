@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - Advanced Types
+ * OpenTrust Protocol Witness - Advanced Types
  * 
  * @version 4.0.2
  * @author OpenTrust Protocol Team
@@ -11,7 +11,7 @@ import {
   OutcomeType as CoreOutcomeType
 } from 'opentrustprotocol';
 
-// Extended NeutrosophicJudgment with judgment_id for oracle use
+// Extended NeutrosophicJudgment with judgment_id for witness use
 export interface NeutrosophicJudgment {
   judgment_id?: string;
   T: number;
@@ -27,21 +27,21 @@ export interface NeutrosophicJudgment {
 // Re-export other core types
 export type ProvenanceEntry = CoreProvenanceEntry;
 
-// Extended OutcomeJudgment with additional outcome types for oracle use
+// Extended OutcomeJudgment with additional outcome types for witness use
 export interface OutcomeJudgment {
   judgment_id: string;
   links_to_judgment_id: string;
   T: number;
   I: number;
   F: number;
-  outcome_type: string; // Allow any string for oracle-specific types
-  oracle_source: string;
+  outcome_type: string; // Allow any string for witness-specific types
+  witness_source: string;
   provenance_chain: readonly ProvenanceEntry[];
 }
 
 export { CoreOutcomeType as OutcomeType };
 
-// Extended outcome types for oracle-specific use cases
+// Extended outcome types for witness-specific use cases
 export enum ExtendedOutcomeType {
   SUCCESS = 'success',
   FAILURE = 'failure',
@@ -52,15 +52,15 @@ export enum ExtendedOutcomeType {
   MEDICAL_FAILURE = 'medical_failure'
 }
 
-// Oracle Configuration
-export interface OracleConfig {
-  oracleId: string;
+// Witness Configuration
+export interface WitnessConfig {
+  witnessId: string;
   version: string;
   description: string;
-  validationRules?: OracleValidationRules;
+  validationRules?: WitnessValidationRules;
 }
 
-export interface OracleValidationRules {
+export interface WitnessValidationRules {
   minConfidence: number;
   maxIndeterminacy: number;
   requiredFields: string[];
@@ -85,12 +85,12 @@ export interface OutcomeRecord {
   judgment_id: string;
   outcome_judgment: OutcomeJudgment;
   timestamp: string;
-  oracle_source: string;
+  witness_source: string;
 }
 
 // Performance Analysis
 export interface PerformanceAnalysis {
-  oracle_id: string;
+  witness_id: string;
   period: {
     start: string;
     end: string;
@@ -173,7 +173,7 @@ export interface VoIByConfidence {
 export interface JudgmentPairStorage {
   savePair(pair: JudgmentPair): Promise<void>;
   getPair(judgmentId: string): Promise<JudgmentPair | null>;
-  getPairsByOracle(oracleId: string): Promise<JudgmentPair[]>;
+  getPairsByWitness(witnessId: string): Promise<JudgmentPair[]>;
   getPairsByJudgmentId(judgmentId: string): Promise<JudgmentPair[]>;
   getJudgmentPairs(timeRange?: { start: Date; end: Date }, context?: string): Promise<JudgmentPair[]>;
   getJudgmentPairsByMapper(mapperId: string, timeRange?: { start: Date; end: Date }): Promise<JudgmentPair[]>;
@@ -183,7 +183,7 @@ export interface JudgmentPairStorage {
 
 export interface StorageStats {
   totalPairs: number;
-  oracleCount: number;
+  witnessCount: number;
   timestampCount: number;
   memoryUsage: number;
   oldestTimestamp?: Date;
@@ -191,10 +191,10 @@ export interface StorageStats {
 }
 
 // Error Types
-export class OracleError extends Error {
+export class WitnessError extends Error {
   constructor(message: string, public code?: string) {
     super(message);
-    this.name = 'OracleError';
+    this.name = 'WitnessError';
   }
 }
 

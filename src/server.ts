@@ -1,15 +1,15 @@
 /**
- * OpenTrust Protocol Oracle - Production Server
+ * OpenTrust Protocol Witness - Production Server
  * 
  * Complete production server integrating REST API, WebSocket,
- * PostgreSQL storage, and all Oracle components.
+ * PostgreSQL storage, and all Witness components.
  * 
  * @version 4.0.0
  * @author OpenTrust Protocol Team
  */
 
-import { OracleAPIServer, APIConfig } from './api/rest-server';
-import { OracleWebSocketServer, WebSocketConfig } from './api/websocket-server';
+import { WitnessAPIServer, APIConfig } from './api/rest-server';
+import { WitnessWebSocketServer, WebSocketConfig } from './api/websocket-server';
 import { PostgreSQLConfig } from './storage/PostgreSQLStorage';
 
 export interface ServerConfig {
@@ -18,30 +18,30 @@ export interface ServerConfig {
   postgres: PostgreSQLConfig;
 }
 
-export class OracleServer {
-  private apiServer: OracleAPIServer;
-  private wsServer: OracleWebSocketServer;
+export class WitnessServer {
+  private apiServer: WitnessAPIServer;
+  private wsServer: WitnessWebSocketServer;
   private config: ServerConfig;
   private isShuttingDown: boolean = false;
 
   constructor(config: ServerConfig) {
     this.config = config;
-    this.apiServer = new OracleAPIServer(config.api);
+    this.apiServer = new WitnessAPIServer(config.api);
     
     // Initialize WebSocket server with shared components
-    this.wsServer = new OracleWebSocketServer(
+    this.wsServer = new WitnessWebSocketServer(
       config.websocket,
       (this.apiServer as any).dashboard,
-      (this.apiServer as any).oracles
+      (this.apiServer as any).witnesss
     );
   }
 
   /**
-   * Start the complete Oracle server
+   * Start the complete Witness server
    */
   async start(): Promise<void> {
     try {
-      console.log('🚀 Starting OpenTrust Protocol Oracle Server v4.0.0...\n');
+      console.log('🚀 Starting OpenTrust Protocol Witness Server v4.0.0...\n');
 
       // Start API server
       await this.apiServer.start();
@@ -52,7 +52,7 @@ export class OracleServer {
       // Setup graceful shutdown
       this.setupGracefulShutdown();
 
-      console.log('\n✅ Oracle Server started successfully!');
+      console.log('\n✅ Witness Server started successfully!');
       console.log('📊 Available Services:');
       console.log(`   • REST API: http://localhost:${this.config.api.port}`);
       console.log(`   • WebSocket: ws://localhost:${this.config.websocket.port}`);
@@ -61,19 +61,19 @@ export class OracleServer {
       console.log(`   • Database: ${this.config.postgres.host}:${this.config.postgres.port}/${this.config.postgres.database}\n`);
 
     } catch (error) {
-      console.error('❌ Failed to start Oracle Server:', error);
+      console.error('❌ Failed to start Witness Server:', error);
       process.exit(1);
     }
   }
 
   /**
-   * Stop the Oracle server gracefully
+   * Stop the Witness server gracefully
    */
   async stop(): Promise<void> {
     if (this.isShuttingDown) return;
     
     this.isShuttingDown = true;
-    console.log('\n🛑 Shutting down Oracle Server...');
+    console.log('\n🛑 Shutting down Witness Server...');
 
     try {
       // Stop WebSocket server
@@ -82,7 +82,7 @@ export class OracleServer {
       // Stop API server
       await this.apiServer.stop();
 
-      console.log('✅ Oracle Server stopped gracefully');
+      console.log('✅ Witness Server stopped gracefully');
     } catch (error) {
       console.error('❌ Error during shutdown:', error);
     }
@@ -166,9 +166,9 @@ export function createDefaultConfig(): ServerConfig {
       postgresConfig: {
         host: process.env['DB_HOST'] || 'localhost',
         port: parseInt(process.env['DB_PORT'] || '5432'),
-        database: process.env['DB_NAME'] || 'opentrust_oracle',
-        username: process.env['DB_USER'] || 'oracle_user',
-        password: process.env['DB_PASSWORD'] || 'oracle_password',
+        database: process.env['DB_NAME'] || 'opentrust_witness',
+        username: process.env['DB_USER'] || 'witness_user',
+        password: process.env['DB_PASSWORD'] || 'witness_password',
         ssl: process.env['DB_SSL'] === 'true'
       }
     },
@@ -180,9 +180,9 @@ export function createDefaultConfig(): ServerConfig {
     postgres: {
       host: process.env['DB_HOST'] || 'localhost',
       port: parseInt(process.env['DB_PORT'] || '5432'),
-      database: process.env['DB_NAME'] || 'opentrust_oracle',
-      username: process.env['DB_USER'] || 'oracle_user',
-      password: process.env['DB_PASSWORD'] || 'oracle_password',
+      database: process.env['DB_NAME'] || 'opentrust_witness',
+      username: process.env['DB_USER'] || 'witness_user',
+      password: process.env['DB_PASSWORD'] || 'witness_password',
       ssl: process.env['DB_SSL'] === 'true',
       max: parseInt(process.env['DB_POOL_MAX'] || '20'),
       idleTimeoutMillis: parseInt(process.env['DB_IDLE_TIMEOUT'] || '30000'),
@@ -197,7 +197,7 @@ export function createDefaultConfig(): ServerConfig {
 async function main() {
   try {
     const config = createDefaultConfig();
-    const server = new OracleServer(config);
+    const server = new WitnessServer(config);
     
     await server.start();
 

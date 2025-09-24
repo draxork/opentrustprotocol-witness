@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - Analytics Engine Tests
+ * OpenTrust Protocol Witness - Analytics Engine Tests
  * 
  * Tests for the OTPAnalyticsEngine functionality.
  */
@@ -39,28 +39,28 @@ describe('OTPAnalyticsEngine Tests', () => {
               T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
               links_to_judgment_id: 'decision-1',
               outcome_type: OutcomeType.SUCCESS,
-              oracle_source: 'test-oracle'
+              witness_source: 'test-witness'
             },
             timestamp: new Date().toISOString(),
-            oracle_source: 'test-oracle'
+            witness_source: 'test-witness'
           }
         }
       ];
 
-      const analysis = await analyticsEngine.analyzePerformance('test-oracle', pairs);
+      const analysis = await analyticsEngine.analyzePerformance('test-witness', pairs);
       
       expect(analysis).toBeDefined();
-      expect(analysis.oracle_id).toBe('test-oracle');
+      expect(analysis.witness_id).toBe('test-witness');
       expect(analysis.total_judgments).toBe(1);
       expect(analysis.success_rate).toBe(1.0);
       expect(analysis.performance_grade).toBe('A+');
     });
 
-    it('should handle empty oracle pairs', async () => {
+    it('should handle empty witness pairs', async () => {
       const pairs: JudgmentPair[] = [];
       
-      await expect(analyticsEngine.analyzePerformance('nonexistent-oracle', pairs))
-        .rejects.toThrow('No judgment pairs found for oracle: nonexistent-oracle');
+      await expect(analyticsEngine.analyzePerformance('nonexistent-witness', pairs))
+        .rejects.toThrow('No judgment pairs found for witness: nonexistent-witness');
     });
   });
 
@@ -88,10 +88,10 @@ describe('OTPAnalyticsEngine Tests', () => {
               T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
               links_to_judgment_id: 'decision-1',
               outcome_type: OutcomeType.SUCCESS,
-              oracle_source: 'test-oracle'
+              witness_source: 'test-witness'
             },
             timestamp: new Date().toISOString(),
-            oracle_source: 'test-oracle'
+            witness_source: 'test-witness'
           }
         }
       ];
@@ -129,10 +129,10 @@ describe('OTPAnalyticsEngine Tests', () => {
               T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
               links_to_judgment_id: 'decision-1',
               outcome_type: OutcomeType.SUCCESS,
-              oracle_source: 'test-oracle'
+              witness_source: 'test-witness'
             },
             timestamp: new Date().toISOString(),
-            oracle_source: 'test-oracle'
+            witness_source: 'test-witness'
           }
         }
       ];
@@ -171,10 +171,10 @@ describe('OTPAnalyticsEngine Tests', () => {
               T: 1.0, I: 0.0, F: 0.0, provenance_chain: [],
               links_to_judgment_id: 'decision-1',
               outcome_type: OutcomeType.SUCCESS,
-              oracle_source: 'test-oracle'
+              witness_source: 'test-witness'
             },
             timestamp: new Date().toISOString(),
-            oracle_source: 'test-oracle'
+            witness_source: 'test-witness'
           }
         },
         {
@@ -198,10 +198,10 @@ describe('OTPAnalyticsEngine Tests', () => {
               T: 0.0, I: 0.0, F: 1.0, provenance_chain: [],
               links_to_judgment_id: 'decision-2',
               outcome_type: OutcomeType.FAILURE,
-              oracle_source: 'test-oracle'
+              witness_source: 'test-witness'
             },
             timestamp: new Date().toISOString(),
-            oracle_source: 'test-oracle'
+            witness_source: 'test-witness'
           }
         }
       ];

@@ -1,5 +1,5 @@
 /**
- * OpenTrust Protocol Oracle - Enhanced Oracle with Analytics Integration
+ * OpenTrust Protocol Witness - Enhanced Witness with Analytics Integration
  * 
  * @version 3.0.0
  */
@@ -7,7 +7,7 @@
 import { OTPAnalyticsEngine } from '../analytics/OTPAnalyticsEngine';
 import { MemoryStorage } from '../storage/MemoryStorage';
 import { 
-  OracleConfig, 
+  WitnessConfig, 
   JudgmentPair, 
   NeutrosophicJudgment, 
   OutcomeJudgment,
@@ -15,12 +15,12 @@ import {
   JudgmentPairStorage
 } from '../types/index';
 
-export class EnhancedOracle {
-  private config: OracleConfig;
+export class EnhancedWitness {
+  private config: WitnessConfig;
   private storage: JudgmentPairStorage;
   private analytics: OTPAnalyticsEngine;
 
-  constructor(config: OracleConfig, storage?: JudgmentPairStorage) {
+  constructor(config: WitnessConfig, storage?: JudgmentPairStorage) {
     this.config = config;
     this.storage = storage || new MemoryStorage();
     this.analytics = new OTPAnalyticsEngine();
@@ -46,27 +46,27 @@ export class EnhancedOracle {
         judgment: decision,
         timestamp: new Date().toISOString(),
         context: context || {},
-        mapper_id: 'enhanced-oracle'
+        mapper_id: 'enhanced-witness'
       },
       outcome: {
         judgment_id: outcome.judgment_id || `outcome_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         outcome_judgment: outcome,
         timestamp: new Date().toISOString(),
-        oracle_source: this.config.oracleId
+        witness_source: this.config.witnessId
       }
     };
 
     // Store the pair
     await this.storage.savePair(pair);
 
-    console.log(`✅ Enhanced Oracle ${this.config.oracleId} recorded outcome for judgment ${decision.judgment_id!}`);
+    console.log(`✅ Enhanced Witness ${this.config.witnessId} recorded outcome for judgment ${decision.judgment_id!}`);
   }
 
   /**
    * Get real-time performance metrics
    */
   async getRealTimeMetrics(): Promise<{
-    oracle_id: string;
+    witness_id: string;
     total_judgments: number;
     success_rate: number;
     average_confidence: number;
@@ -74,11 +74,11 @@ export class EnhancedOracle {
     last_updated: string;
     performance_grade: string;
   }> {
-    const pairs = await this.storage.getPairsByOracle(this.config.oracleId);
+    const pairs = await this.storage.getPairsByWitness(this.config.witnessId);
     
     if (pairs.length === 0) {
       return {
-        oracle_id: this.config.oracleId,
+        witness_id: this.config.witnessId,
         total_judgments: 0,
         success_rate: 0,
         average_confidence: 0,
@@ -94,7 +94,7 @@ export class EnhancedOracle {
     const performanceGrade = this.calculatePerformanceGrade(successRate);
 
     return {
-      oracle_id: this.config.oracleId,
+      witness_id: this.config.witnessId,
       total_judgments: pairs.length,
       success_rate: successRate,
       average_confidence: avgConfidence,
@@ -108,20 +108,20 @@ export class EnhancedOracle {
    * Get comprehensive performance analysis
    */
   async getPerformanceAnalysis(): Promise<PerformanceAnalysis> {
-    const pairs = await this.storage.getPairsByOracle(this.config.oracleId);
+    const pairs = await this.storage.getPairsByWitness(this.config.witnessId);
     
     if (pairs.length === 0) {
-      throw new Error(`No judgment pairs found for oracle: ${this.config.oracleId}`);
+      throw new Error(`No judgment pairs found for witness: ${this.config.witnessId}`);
     }
 
-    return await this.analytics.analyzePerformance(this.config.oracleId, pairs);
+    return await this.analytics.analyzePerformance(this.config.witnessId, pairs);
   }
 
   /**
-   * Get oracle status with health indicators
+   * Get witness status with health indicators
    */
-  async getOracleStatus(): Promise<{
-    oracle_id: string;
+  async getWitnessStatus(): Promise<{
+    witness_id: string;
     status: 'healthy' | 'warning' | 'critical';
     version: string;
     uptime: number;
@@ -134,7 +134,7 @@ export class EnhancedOracle {
       calibration_quality: 'excellent' | 'good' | 'fair' | 'poor';
     };
   }> {
-    const pairs = await this.storage.getPairsByOracle(this.config.oracleId);
+    const pairs = await this.storage.getPairsByWitness(this.config.witnessId);
     const metrics = await this.getRealTimeMetrics();
     
     // Determine overall status
@@ -143,7 +143,7 @@ export class EnhancedOracle {
     else if (metrics.success_rate < 0.7) status = 'warning';
 
     return {
-      oracle_id: this.config.oracleId,
+      witness_id: this.config.witnessId,
       status,
       version: this.config.version,
       uptime: process.uptime(),
@@ -162,12 +162,12 @@ export class EnhancedOracle {
    * Export all data for backup or analysis
    */
   async exportData(): Promise<{
-    oracle_config: OracleConfig;
+    witness_config: WitnessConfig;
     judgment_pairs: JudgmentPair[];
     analytics_summary: any;
     export_timestamp: string;
   }> {
-    const pairs = await this.storage.getPairsByOracle(this.config.oracleId);
+    const pairs = await this.storage.getPairsByWitness(this.config.witnessId);
     
     let analyticsSummary = null;
     try {
@@ -177,7 +177,7 @@ export class EnhancedOracle {
     }
 
     return {
-      oracle_config: this.config,
+      witness_config: this.config,
       judgment_pairs: pairs,
       analytics_summary: analyticsSummary,
       export_timestamp: new Date().toISOString()

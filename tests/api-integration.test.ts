@@ -1,14 +1,14 @@
 /**
- * OpenTrust Protocol Oracle - API Integration Tests
+ * OpenTrust Protocol Witness - API Integration Tests
  * 
  * Comprehensive tests for REST API and WebSocket functionality
  */
 
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { OracleAPIServer, APIConfig } from '../src/api/rest-server';
-import { OracleWebSocketServer } from '../src/api/websocket-server';
-import { OracleServer, ServerConfig } from '../src/server';
+import { WitnessAPIServer, APIConfig } from '../src/api/rest-server';
+import { WitnessWebSocketServer } from '../src/api/websocket-server';
+import { WitnessServer, ServerConfig } from '../src/server';
 
 // Mock dependencies
 jest.mock('pg', () => ({
@@ -21,7 +21,7 @@ jest.mock('pg', () => ({
         console.log('Matched COUNT(*) query');
         return Promise.resolve({ rows: [{ count: '0' }], rowCount: 1 });
       }
-      if (sql.includes('SELECT COUNT(DISTINCT outcome_oracle_source) as count')) {
+      if (sql.includes('SELECT COUNT(DISTINCT outcome_witness_source) as count')) {
         console.log('Matched COUNT(DISTINCT) query');
         return Promise.resolve({ rows: [{ count: '0' }], rowCount: 1 });
       }
@@ -34,8 +34,8 @@ jest.mock('pg', () => ({
         console.log('Matched COUNT(*) query (fallback)');
         return Promise.resolve({ rows: [{ count: '0' }], rowCount: 1 });
       }
-      if (sql.includes('SELECT COUNT(DISTINCT oracle_id) FROM judgment_pairs')) {
-        console.log('Matched COUNT(DISTINCT oracle_id) query');
+      if (sql.includes('SELECT COUNT(DISTINCT witness_id) FROM judgment_pairs')) {
+        console.log('Matched COUNT(DISTINCT witness_id) query');
         return Promise.resolve({ rows: [{ count: '0' }], rowCount: 1 });
       }
       if (sql.includes('SELECT MIN(timestamp), MAX(timestamp) FROM judgment_pairs')) {
@@ -70,8 +70,8 @@ jest.mock('pg', () => ({
 
 jest.mock('ws');
 
-describe('Oracle API Integration Tests', () => {
-  let apiServer: OracleAPIServer;
+describe('Witness API Integration Tests', () => {
+  let apiServer: WitnessAPIServer;
   let testToken: string;
   let apiConfig: APIConfig;
 
@@ -85,7 +85,7 @@ describe('Oracle API Integration Tests', () => {
       postgresConfig: {
         host: 'localhost',
         port: 5432,
-        database: 'test_oracle',
+        database: 'test_witness',
         username: 'test_user',
         password: 'test_password',
         ssl: false
@@ -102,7 +102,7 @@ describe('Oracle API Integration Tests', () => {
 
   beforeEach(async () => {
     // Create fresh instances for each test
-    apiServer = new OracleAPIServer(apiConfig);
+    apiServer = new WitnessAPIServer(apiConfig);
     
     // Mock the storage initialization
     jest.spyOn(apiServer['storage'], 'initialize').mockResolvedValue();
@@ -132,136 +132,136 @@ describe('Oracle API Integration Tests', () => {
   describe('Authentication', () => {
     it('should require authentication for protected endpoints', async () => {
       await request(apiServer['app'])
-        .get('/api/oracles')
+        .get('/api/witnesss')
         .expect(401);
     });
 
     it('should accept valid JWT token', async () => {
       const response = await request(apiServer['app'])
-        .get('/api/oracles')
+        .get('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({
-        oracles: expect.any(Array),
+        witnesss: expect.any(Array),
         total: expect.any(Number)
       });
     });
 
     it('should reject invalid JWT token', async () => {
       await request(apiServer['app'])
-        .get('/api/oracles')
+        .get('/api/witnesss')
         .set('Authorization', 'Bearer invalid-token')
         .expect(403);
     });
   });
 
-  describe('Oracle Management API', () => {
-    it('should create a new oracle', async () => {
-      const oracleConfig = {
-        oracleId: 'test-oracle-1',
+  describe('Witness Management API', () => {
+    it('should create a new witness', async () => {
+      const witnessConfig = {
+        witnessId: 'test-witness-1',
         version: '4.0.0',
-        description: 'Test Oracle for API testing'
+        description: 'Test Witness for API testing'
       };
 
       const response = await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig)
+        .send(witnessConfig)
         .expect(201);
 
       expect(response.body).toMatchObject({
-        message: 'Oracle created successfully',
-        oracleId: oracleConfig.oracleId,
-        config: oracleConfig
+        message: 'Witness created successfully',
+        witnessId: witnessConfig.witnessId,
+        config: witnessConfig
       });
     });
 
-    it('should reject oracle creation with missing fields', async () => {
+    it('should reject witness creation with missing fields', async () => {
       const invalidConfig = {
-        oracleId: 'test-oracle-2'
+        witnessId: 'test-witness-2'
         // Missing version and description
       };
 
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
         .send(invalidConfig)
         .expect(400);
     });
 
-    it('should reject duplicate oracle creation', async () => {
-      const oracleConfig = {
-        oracleId: 'test-oracle-3',
+    it('should reject duplicate witness creation', async () => {
+      const witnessConfig = {
+        witnessId: 'test-witness-3',
         version: '4.0.0',
-        description: 'Test Oracle for duplicate testing'
+        description: 'Test Witness for duplicate testing'
       };
 
-      // Create first oracle
+      // Create first witness
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig)
+        .send(witnessConfig)
         .expect(201);
 
       // Try to create duplicate
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig)
+        .send(witnessConfig)
         .expect(409);
     });
 
-    it('should list created oracles', async () => {
-      // Create a test oracle
-      const oracleConfig = {
-        oracleId: 'test-oracle-4',
+    it('should list created witnesss', async () => {
+      // Create a test witness
+      const witnessConfig = {
+        witnessId: 'test-witness-4',
         version: '4.0.0',
-        description: 'Test Oracle for listing'
+        description: 'Test Witness for listing'
       };
 
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig)
+        .send(witnessConfig)
         .expect(201);
 
-      // List oracles
+      // List witnesss
       const response = await request(apiServer['app'])
-        .get('/api/oracles')
+        .get('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
-      expect(response.body.oracles).toHaveLength(1);
-      expect(response.body.oracles[0]).toMatchObject({
-        oracleId: oracleConfig.oracleId,
+      expect(response.body.witnesss).toHaveLength(1);
+      expect(response.body.witnesss[0]).toMatchObject({
+        witnessId: witnessConfig.witnessId,
         registered: true
       });
     });
 
-      it('should get oracle status', async () => {
-      // Create a test oracle
-      const oracleConfig = {
-        oracleId: 'test-oracle-5',
+      it('should get witness status', async () => {
+      // Create a test witness
+      const witnessConfig = {
+        witnessId: 'test-witness-5',
         version: '4.0.0',
-        description: 'Test Oracle for status'
+        description: 'Test Witness for status'
       };
 
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig)
+        .send(witnessConfig)
         .expect(201);
 
-      // Get oracle status
+      // Get witness status
       const response = await request(apiServer['app'])
-        .get(`/api/oracles/${oracleConfig.oracleId}`)
+        .get(`/api/witnesss/${witnessConfig.witnessId}`)
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({
-        oracle_id: oracleConfig.oracleId,
-        version: oracleConfig.version,
+        witness_id: witnessConfig.witnessId,
+        version: witnessConfig.version,
         status: expect.stringMatching(/^(healthy|warning|critical)$/),
         uptime: expect.any(Number),
         total_judgments: expect.any(Number),
@@ -270,31 +270,31 @@ describe('Oracle API Integration Tests', () => {
       });
     });
 
-    it('should return 404 for non-existent oracle', async () => {
+    it('should return 404 for non-existent witness', async () => {
       await request(apiServer['app'])
-        .get('/api/oracles/non-existent-oracle')
+        .get('/api/witnesss/non-existent-witness')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(404);
     });
   });
 
   describe('Outcome Recording API', () => {
-    let oracleId: string;
+    let witnessId: string;
 
     beforeEach(async () => {
-      // Create a test oracle for outcome recording tests
-      const oracleConfig = {
-        oracleId: 'test-oracle-outcomes',
+      // Create a test witness for outcome recording tests
+      const witnessConfig = {
+        witnessId: 'test-witness-outcomes',
         version: '4.0.0',
-        description: 'Test Oracle for outcome recording'
+        description: 'Test Witness for outcome recording'
       };
 
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
-        .send(oracleConfig);
+        .send(witnessConfig);
 
-      oracleId = oracleConfig.oracleId;
+      witnessId = witnessConfig.witnessId;
     });
 
       it('should record an outcome successfully', async () => {
@@ -319,14 +319,14 @@ describe('Oracle API Integration Tests', () => {
       };
 
       const response = await request(apiServer['app'])
-        .post(`/api/oracles/${oracleId}/outcomes`)
+        .post(`/api/witnesss/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(outcomeData)
         .expect(201);
 
       expect(response.body).toMatchObject({
         message: 'Outcome recorded successfully',
-        oracleId,
+        witnessId,
         decisionId: outcomeData.decision.judgment_id,
         outcomeId: outcomeData.outcome.judgment_id
       });
@@ -345,13 +345,13 @@ describe('Oracle API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post(`/api/oracles/${oracleId}/outcomes`)
+        .post(`/api/witnesss/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(invalidOutcomeData)
         .expect(400);
     });
 
-      it('should get oracle metrics after recording outcomes', async () => {
+      it('should get witness metrics after recording outcomes', async () => {
       // Record a test outcome first
       const outcomeData = {
         decision: {
@@ -373,18 +373,18 @@ describe('Oracle API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post(`/api/oracles/${oracleId}/outcomes`)
+        .post(`/api/witnesss/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(outcomeData);
 
       // Get metrics
       const response = await request(apiServer['app'])
-        .get(`/api/oracles/${oracleId}/metrics`)
+        .get(`/api/witnesss/${witnessId}/metrics`)
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({
-        oracle_id: oracleId,
+        witness_id: witnessId,
         total_judgments: expect.any(Number),
         success_rate: expect.any(Number),
         average_confidence: expect.any(Number),
@@ -404,9 +404,9 @@ describe('Oracle API Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         timestamp: expect.any(String),
-        oracles: expect.any(Array),
+        witnesss: expect.any(Array),
         global_metrics: expect.objectContaining({
-          total_oracles: expect.any(Number),
+          total_witnesss: expect.any(Number),
           total_judgments: expect.any(Number),
           average_success_rate: expect.any(Number),
           system_health: expect.stringMatching(/^(excellent|good|fair|poor)$/)
@@ -424,7 +424,7 @@ describe('Oracle API Integration Tests', () => {
         timestamps: expect.any(Array),
         success_rates: expect.any(Array),
         total_judgments: expect.any(Array),
-        oracle_count: expect.any(Array)
+        witness_count: expect.any(Array)
       });
     });
 
@@ -449,7 +449,7 @@ describe('Oracle API Integration Tests', () => {
       const storage = apiServer['storage'];
       const mockStats = {
         totalPairs: 0,
-        oracleCount: 0,
+        witnessCount: 0,
         timestampCount: 0,
         memoryUsage: 0
       };
@@ -463,7 +463,7 @@ describe('Oracle API Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         totalPairs: expect.any(Number),
-        oracleCount: expect.any(Number),
+        witnessCount: expect.any(Number),
         timestampCount: expect.any(Number),
         memoryUsage: expect.any(Number)
       });
@@ -489,7 +489,7 @@ describe('Oracle API Integration Tests', () => {
       // Make multiple requests quickly to test rate limiting
       const promises = Array(10).fill(null).map(() =>
         request(apiServer['app'])
-          .get('/api/oracles')
+          .get('/api/witnesss')
           .set('Authorization', `Bearer ${testToken}`)
       );
 
@@ -505,7 +505,7 @@ describe('Oracle API Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle malformed JSON requests', async () => {
       await request(apiServer['app'])
-        .post('/api/oracles')
+        .post('/api/witnesss')
         .set('Authorization', `Bearer ${testToken}`)
         .set('Content-Type', 'application/json')
         .send('invalid json')
@@ -522,7 +522,7 @@ describe('Oracle API Integration Tests', () => {
 });
 
 describe('WebSocket Integration Tests', () => {
-  let wsServer: OracleWebSocketServer;
+  let wsServer: WitnessWebSocketServer;
 
   beforeAll(() => {
     const config = {
@@ -536,9 +536,9 @@ describe('WebSocket Integration Tests', () => {
     const mockDashboard = {
       getCurrentMetrics: jest.fn().mockResolvedValue({
         timestamp: new Date().toISOString(),
-        oracles: [],
+        witnesss: [],
         global_metrics: {
-          total_oracles: 0,
+          total_witnesss: 0,
           total_judgments: 0,
           average_success_rate: 0,
           system_health: 'excellent'
@@ -548,9 +548,9 @@ describe('WebSocket Integration Tests', () => {
       stopMonitoring: jest.fn()
     };
 
-    const mockOracles = new Map();
+    const mockWitnesss = new Map();
 
-    wsServer = new OracleWebSocketServer(config, mockDashboard as any, mockOracles);
+    wsServer = new WitnessWebSocketServer(config, mockDashboard as any, mockWitnesss);
   });
 
   beforeEach(() => {
@@ -579,7 +579,7 @@ describe('WebSocket Integration Tests', () => {
 });
 
 describe('Complete Server Integration', () => {
-  let server: OracleServer;
+  let server: WitnessServer;
   let config: ServerConfig;
 
   beforeAll(() => {
@@ -593,7 +593,7 @@ describe('Complete Server Integration', () => {
         postgresConfig: {
           host: 'localhost',
           port: 5432,
-          database: 'test_oracle_complete',
+          database: 'test_witness_complete',
           username: 'test_user',
           password: 'test_password',
           ssl: false
@@ -607,7 +607,7 @@ describe('Complete Server Integration', () => {
       postgres: {
         host: 'localhost',
         port: 5432,
-        database: 'test_oracle_complete',
+        database: 'test_witness_complete',
         username: 'test_user',
         password: 'test_password',
         ssl: false,
@@ -617,7 +617,7 @@ describe('Complete Server Integration', () => {
       }
     };
 
-    server = new OracleServer(config);
+    server = new WitnessServer(config);
   });
 
   beforeEach(async () => {

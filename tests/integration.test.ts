@@ -1,13 +1,13 @@
 /**
- * OpenTrust Protocol Oracle - Integration Tests
+ * OpenTrust Protocol Witness - Integration Tests
  * 
- * Comprehensive integration tests for Enhanced Oracle + Analytics + Dashboard
+ * Comprehensive integration tests for Enhanced Witness + Analytics + Dashboard
  */
 
-import { EnhancedOracle } from '../src/oracle/EnhancedOracle';
+import { EnhancedWitness } from '../src/witness/EnhancedWitness';
 import { PerformanceDashboard } from '../src/dashboard/PerformanceDashboard';
 import { MemoryStorage } from '../src/storage/MemoryStorage';
-import { OracleConfig, NeutrosophicJudgment, OutcomeJudgment, OutcomeType } from '../src/types/index';
+import { WitnessConfig, NeutrosophicJudgment, OutcomeJudgment, OutcomeType } from '../src/types/index';
 
 // Mock opentrustprotocol
 jest.mock('opentrustprotocol', () => ({
@@ -18,12 +18,12 @@ jest.mock('opentrustprotocol', () => ({
     toString: jest.fn(() => `NeutrosophicJudgment(T=${T}, I=${I}, F=${F})`),
     equals: jest.fn(() => false)
   })),
-  OutcomeJudgment: jest.fn().mockImplementation((judgmentId, linksTo, T, I, F, outcomeType, oracleSource, provenance) => ({
+  OutcomeJudgment: jest.fn().mockImplementation((judgmentId, linksTo, T, I, F, outcomeType, witnessSource, provenance) => ({
     judgment_id: judgmentId,
     links_to_judgment_id: linksTo,
     T, I, F,
     outcome_type: outcomeType,
-    oracle_source: oracleSource,
+    witness_source: witnessSource,
     provenance_chain: provenance || []
   })),
   OutcomeType: {
@@ -36,22 +36,22 @@ jest.mock('opentrustprotocol', () => ({
   }
 }));
 
-describe('Enhanced Oracle Integration Tests', () => {
-  let enhancedOracle: EnhancedOracle;
+describe('Enhanced Witness Integration Tests', () => {
+  let enhancedWitness: EnhancedWitness;
   let storage: MemoryStorage;
-  let config: OracleConfig;
+  let config: WitnessConfig;
 
   beforeEach(() => {
     config = {
-      oracleId: 'test-enhanced-oracle',
+      witnessId: 'test-enhanced-witness',
       version: '3.0.0',
-      description: 'Test Enhanced Oracle'
+      description: 'Test Enhanced Witness'
     };
     storage = new MemoryStorage();
-    enhancedOracle = new EnhancedOracle(config, storage);
+    enhancedWitness = new EnhancedWitness(config, storage);
   });
 
-  describe('Enhanced Oracle Functionality', () => {
+  describe('Enhanced Witness Functionality', () => {
     it('should record outcomes successfully', async () => {
       const decision: NeutrosophicJudgment = {
         judgment_id: 'decision-1',
@@ -74,11 +74,11 @@ describe('Enhanced Oracle Integration Tests', () => {
         I: 0.0,
         F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        oracle_source: 'test-enhanced-oracle',
+        witness_source: 'test-enhanced-witness',
         provenance_chain: []
       };
 
-      await expect(enhancedOracle.recordOutcome(decision, outcome)).resolves.not.toThrow();
+      await expect(enhancedWitness.recordOutcome(decision, outcome)).resolves.not.toThrow();
     });
 
     it('should get real-time metrics', async () => {
@@ -102,27 +102,27 @@ describe('Enhanced Oracle Integration Tests', () => {
         I: 0.0,
         F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        oracle_source: 'test-enhanced-oracle',
+        witness_source: 'test-enhanced-witness',
         provenance_chain: []
       };
 
-      await enhancedOracle.recordOutcome(decision, outcome);
+      await enhancedWitness.recordOutcome(decision, outcome);
 
-      const metrics = await enhancedOracle.getRealTimeMetrics();
+      const metrics = await enhancedWitness.getRealTimeMetrics();
       
       expect(metrics).toBeDefined();
-      expect(metrics.oracle_id).toBe('test-enhanced-oracle');
+      expect(metrics.witness_id).toBe('test-enhanced-witness');
       expect(metrics.total_judgments).toBeGreaterThan(0);
       expect(metrics.success_rate).toBeGreaterThanOrEqual(0);
       expect(metrics.average_confidence).toBeGreaterThanOrEqual(0);
       expect(metrics.performance_grade).toMatch(/^[A-D][+]?$|^N\/A$/);
     });
 
-    it('should get oracle status', async () => {
-      const status = await enhancedOracle.getOracleStatus();
+    it('should get witness status', async () => {
+      const status = await enhancedWitness.getWitnessStatus();
       
       expect(status).toBeDefined();
-      expect(status.oracle_id).toBe('test-enhanced-oracle');
+      expect(status.witness_id).toBe('test-enhanced-witness');
       expect(['healthy', 'warning', 'critical']).toContain(status.status);
       expect(status.version).toBe('3.0.0');
       expect(status.performance_indicators).toBeDefined();
@@ -130,10 +130,10 @@ describe('Enhanced Oracle Integration Tests', () => {
     });
 
     it('should export data', async () => {
-      const exportedData = await enhancedOracle.exportData();
+      const exportedData = await enhancedWitness.exportData();
       
       expect(exportedData).toBeDefined();
-      expect(exportedData.oracle_config).toEqual(config);
+      expect(exportedData.witness_config).toEqual(config);
       expect(Array.isArray(exportedData.judgment_pairs)).toBe(true);
       expect(exportedData.export_timestamp).toBeDefined();
     });
@@ -144,20 +144,20 @@ describe('Enhanced Oracle Integration Tests', () => {
       // Record multiple outcomes for analysis
       const outcomes = [
         { decision: { judgment_id: 'd1', T: 0.8, I: 0.1, F: 0.1, provenance_chain: [], validate: jest.fn(), toJSON: jest.fn(), toString: jest.fn(), equals: jest.fn() } as any, 
-          outcome: { judgment_id: 'o1', links_to_judgment_id: 'd1', T: 1.0, I: 0.0, F: 0.0, outcome_type: OutcomeType.SUCCESS, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } },
+          outcome: { judgment_id: 'o1', links_to_judgment_id: 'd1', T: 1.0, I: 0.0, F: 0.0, outcome_type: OutcomeType.SUCCESS, witness_source: 'test-enhanced-witness', provenance_chain: [] } },
         { decision: { judgment_id: 'd2', T: 0.6, I: 0.2, F: 0.2, provenance_chain: [], validate: jest.fn(), toJSON: jest.fn(), toString: jest.fn(), equals: jest.fn() } as any, 
-          outcome: { judgment_id: 'o2', links_to_judgment_id: 'd2', T: 0.0, I: 0.0, F: 1.0, outcome_type: OutcomeType.FAILURE, oracle_source: 'test-enhanced-oracle', provenance_chain: [] } }
+          outcome: { judgment_id: 'o2', links_to_judgment_id: 'd2', T: 0.0, I: 0.0, F: 1.0, outcome_type: OutcomeType.FAILURE, witness_source: 'test-enhanced-witness', provenance_chain: [] } }
       ];
 
       for (const { decision, outcome } of outcomes) {
-        await enhancedOracle.recordOutcome(decision as NeutrosophicJudgment, outcome as OutcomeJudgment);
+        await enhancedWitness.recordOutcome(decision as NeutrosophicJudgment, outcome as OutcomeJudgment);
       }
 
       // Test performance analysis
       try {
-        const analysis = await enhancedOracle.getPerformanceAnalysis();
+        const analysis = await enhancedWitness.getPerformanceAnalysis();
         expect(analysis).toBeDefined();
-        expect(analysis.oracle_id).toBe('test-enhanced-oracle');
+        expect(analysis.witness_id).toBe('test-enhanced-witness');
         expect(analysis.total_judgments).toBeGreaterThan(0);
       } catch (error) {
         // Analytics might fail with insufficient data, which is expected
@@ -167,7 +167,7 @@ describe('Enhanced Oracle Integration Tests', () => {
 
     it('should get calibration metrics', async () => {
       try {
-        // const calibration = await enhancedOracle.getCalibrationMetrics();
+        // const calibration = await enhancedWitness.getCalibrationMetrics();
         // expect(calibration).toBeDefined();
       } catch (error) {
         // Expected with no data
@@ -177,7 +177,7 @@ describe('Enhanced Oracle Integration Tests', () => {
 
     it('should get VoI metrics', async () => {
       try {
-        // const voi = await enhancedOracle.getVoIMetrics();
+        // const voi = await enhancedWitness.getVoIMetrics();
         // expect(voi).toBeDefined();
       } catch (error) {
         // Expected with no data
@@ -189,48 +189,48 @@ describe('Enhanced Oracle Integration Tests', () => {
 
 describe('Performance Dashboard Integration Tests', () => {
   let dashboard: PerformanceDashboard;
-  let oracle1: EnhancedOracle;
-  let oracle2: EnhancedOracle;
+  let witness1: EnhancedWitness;
+  let witness2: EnhancedWitness;
 
   beforeEach(() => {
     dashboard = new PerformanceDashboard();
     
-    const config1: OracleConfig = {
-      oracleId: 'dashboard-oracle-1',
+    const config1: WitnessConfig = {
+      witnessId: 'dashboard-witness-1',
       version: '3.0.0',
-      description: 'Dashboard Test Oracle 1'
+      description: 'Dashboard Test Witness 1'
     };
     
-    const config2: OracleConfig = {
-      oracleId: 'dashboard-oracle-2',
+    const config2: WitnessConfig = {
+      witnessId: 'dashboard-witness-2',
       version: '3.0.0',
-      description: 'Dashboard Test Oracle 2'
+      description: 'Dashboard Test Witness 2'
     };
 
-    oracle1 = new EnhancedOracle(config1);
-    oracle2 = new EnhancedOracle(config2);
+    witness1 = new EnhancedWitness(config1);
+    witness2 = new EnhancedWitness(config2);
   });
 
   describe('Dashboard Functionality', () => {
-    it('should register oracles', () => {
-      dashboard.registerOracle(oracle1);
-      dashboard.registerOracle(oracle2);
+    it('should register witnesss', () => {
+      dashboard.registerWitness(witness1);
+      dashboard.registerWitness(witness2);
       
       // No direct way to test registration, but no errors should occur
       expect(true).toBe(true);
     });
 
     it('should get current metrics', async () => {
-      dashboard.registerOracle(oracle1);
-      dashboard.registerOracle(oracle2);
+      dashboard.registerWitness(witness1);
+      dashboard.registerWitness(witness2);
 
       const metrics = await dashboard.getCurrentMetrics();
       
       expect(metrics).toBeDefined();
       expect(metrics.timestamp).toBeDefined();
-      expect(Array.isArray(metrics.oracles)).toBe(true);
+      expect(Array.isArray(metrics.witnesss)).toBe(true);
       expect(metrics.global_metrics).toBeDefined();
-      expect(metrics.global_metrics.total_oracles).toBe(2);
+      expect(metrics.global_metrics.total_witnesss).toBe(2);
     });
 
     it('should get metrics history', () => {
@@ -245,12 +245,12 @@ describe('Performance Dashboard Integration Tests', () => {
       expect(Array.isArray(trends.timestamps)).toBe(true);
       expect(Array.isArray(trends.success_rates)).toBe(true);
       expect(Array.isArray(trends.total_judgments)).toBe(true);
-      expect(Array.isArray(trends.oracle_count)).toBe(true);
+      expect(Array.isArray(trends.witness_count)).toBe(true);
     });
 
     it('should generate performance report', async () => {
-      dashboard.registerOracle(oracle1);
-      dashboard.registerOracle(oracle2);
+      dashboard.registerWitness(witness1);
+      dashboard.registerWitness(witness2);
 
       const report = await dashboard.generateReport();
       
@@ -262,8 +262,8 @@ describe('Performance Dashboard Integration Tests', () => {
     });
 
     it('should export dashboard data', async () => {
-      dashboard.registerOracle(oracle1);
-      dashboard.registerOracle(oracle2);
+      dashboard.registerWitness(witness1);
+      dashboard.registerWitness(witness2);
 
       const exportData = await dashboard.exportDashboardData();
       
@@ -272,15 +272,15 @@ describe('Performance Dashboard Integration Tests', () => {
       expect(exportData.current_metrics).toBeDefined();
       expect(Array.isArray(exportData.metrics_history)).toBe(true);
       expect(exportData.trends).toBeDefined();
-      expect(Array.isArray(exportData.oracles_config)).toBe(true);
+      expect(Array.isArray(exportData.witnesss_config)).toBe(true);
     });
 
-    it('should create test oracle', () => {
-      const testOracle = PerformanceDashboard.createTestOracle('test-oracle-id', 'Test Description');
+    it('should create test witness', () => {
+      const testWitness = PerformanceDashboard.createTestWitness('test-witness-id', 'Test Description');
       
-      expect(testOracle).toBeDefined();
-      expect(testOracle['config'].oracleId).toBe('test-oracle-id');
-      expect(testOracle['config'].description).toBe('Test Description');
+      expect(testWitness).toBeDefined();
+      expect(testWitness['config'].witnessId).toBe('test-witness-id');
+      expect(testWitness['config'].description).toBe('Test Description');
     });
 
     it('should start and stop monitoring', () => {
@@ -295,12 +295,12 @@ describe('Performance Dashboard Integration Tests', () => {
   });
 
   describe('End-to-End Integration', () => {
-    it('should work with multiple oracles and dashboard', async () => {
-      // Register oracles with dashboard
-      dashboard.registerOracle(oracle1);
-      dashboard.registerOracle(oracle2);
+    it('should work with multiple witnesss and dashboard', async () => {
+      // Register witnesss with dashboard
+      dashboard.registerWitness(witness1);
+      dashboard.registerWitness(witness2);
 
-      // Record outcomes in both oracles
+      // Record outcomes in both witnesss
       const decision1: NeutrosophicJudgment = {
         judgment_id: 'integration-decision-1',
         T: 0.9,
@@ -320,7 +320,7 @@ describe('Performance Dashboard Integration Tests', () => {
         I: 0.0,
         F: 0.0,
         outcome_type: OutcomeType.SUCCESS,
-        oracle_source: 'dashboard-oracle-1',
+        witness_source: 'dashboard-witness-1',
         provenance_chain: []
       };
 
@@ -343,33 +343,33 @@ describe('Performance Dashboard Integration Tests', () => {
         I: 0.0,
         F: 1.0,
         outcome_type: OutcomeType.FAILURE,
-        oracle_source: 'dashboard-oracle-2',
+        witness_source: 'dashboard-witness-2',
         provenance_chain: []
       };
 
       // Record outcomes
-      await oracle1.recordOutcome(decision1, outcome1);
-      await oracle2.recordOutcome(decision2, outcome2);
+      await witness1.recordOutcome(decision1, outcome1);
+      await witness2.recordOutcome(decision2, outcome2);
 
       // Get dashboard metrics
       const metrics = await dashboard.getCurrentMetrics();
       
-      expect(metrics.global_metrics.total_oracles).toBe(2);
-      expect(metrics.oracles).toHaveLength(2);
+      expect(metrics.global_metrics.total_witnesss).toBe(2);
+      expect(metrics.witnesss).toHaveLength(2);
       
-      // Verify individual oracle metrics
-      const oracle1Data = metrics.oracles.find(o => o.oracle_id === 'dashboard-oracle-1');
-      const oracle2Data = metrics.oracles.find(o => o.oracle_id === 'dashboard-oracle-2');
+      // Verify individual witness metrics
+      const witness1Data = metrics.witnesss.find(o => o.witness_id === 'dashboard-witness-1');
+      const witness2Data = metrics.witnesss.find(o => o.witness_id === 'dashboard-witness-2');
       
-      expect(oracle1Data).toBeDefined();
-      expect(oracle2Data).toBeDefined();
+      expect(witness1Data).toBeDefined();
+      expect(witness2Data).toBeDefined();
       
-      if (oracle1Data) {
-        expect(oracle1Data.total_judgments).toBeGreaterThan(0);
+      if (witness1Data) {
+        expect(witness1Data.total_judgments).toBeGreaterThan(0);
       }
       
-      if (oracle2Data) {
-        expect(oracle2Data.total_judgments).toBeGreaterThan(0);
+      if (witness2Data) {
+        expect(witness2Data.total_judgments).toBeGreaterThan(0);
       }
     });
   });

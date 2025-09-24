@@ -1,7 +1,7 @@
 {
-  "name": "opentrustprotocol-oracle",
+  "name": "opentrustprotocol-witness",
   "version": "4.0.4",
-  "description": "Performance Oracle & Analytics Engine for OpenTrust Protocol - Real-world outcome tracking and performance measurement",
+  "description": "Performance Witness & Analytics Engine for OpenTrust Protocol - Real-world outcome tracking and performance measurement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -14,8 +14,8 @@
     "clean": "rm -rf dist",
     "start": "node dist/server.js",
     "start:dev": "ts-node src/server.ts",
-    "docker:build": "docker build -t opentrustprotocol-oracle .",
-    "docker:run": "docker run -p 3000:3000 -p 8080:8080 opentrustprotocol-oracle",
+    "docker:build": "docker build -t opentrustprotocol-witness .",
+    "docker:run": "docker run -p 3000:3000 -p 8080:8080 opentrustprotocol-witness",
     "docker:compose": "docker-compose up",
     "docker:compose:prod": "docker-compose --profile production up",
     "docker:compose:monitoring": "docker-compose --profile monitoring up",
@@ -24,7 +24,7 @@
   },
   "keywords": [
     "neutrosophy",
-    "performance-oracle",
+    "performance-witness",
     "analytics",
     "outcome-tracking",
     "trust",
@@ -32,13 +32,13 @@
   ],
   "author": "OpenTrust Protocol Team",
   "license": "MIT",
-  "repository": {
+    "repository": {
     "type": "git",
-    "url": "git+https://github.com/draxork/opentrustprotocol-oracle.git"
+    "url": "git+https://github.com/draxork/opentrustprotocol-witness.git"
   },
-  "homepage": "https://github.com/draxork/opentrustprotocol-oracle#readme",
+  "homepage": "https://github.com/draxork/opentrustprotocol-witness#readme",
   "bugs": {
-    "url": "https://github.com/draxork/opentrustprotocol-oracle/issues"
+    "url": "https://github.com/draxork/opentrustprotocol-witness/issues"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

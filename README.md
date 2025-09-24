@@ -1,19 +1,19 @@
-# 🔮 OpenTrust Protocol Oracle
+# 🔮 OpenTrust Protocol Witness
 
-[![npm version](https://badge.fury.io/js/opentrustprotocol-oracle.svg)](https://badge.fury.io/js/opentrustprotocol-oracle)
+[![npm version](https://badge.fury.io/js/opentrustprotocol-witness.svg)](https://badge.fury.io/js/opentrustprotocol-witness)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
 ## 🚀 **REVOLUTIONARY UPDATE: v4.0.3 - Phase 7 Complete - 100% Perfect Implementation**
 
-The **OpenTrust Protocol Oracle** is the revolutionary second pillar of the OpenTrust Protocol ecosystem, bridging the gap between OTP predictions and real-world outcomes. This creates the foundation for the **Circle of Trust** - a continuous learning loop that improves decision-making over time.
+The **OpenTrust Protocol Witness** is the revolutionary second pillar of the OpenTrust Protocol ecosystem, bridging the gap between OTP predictions and real-world outcomes. This creates the foundation for the **Circle of Trust** - a continuous learning loop that improves decision-making over time.
 
 ### 🎯 **v4.0.3 - Phase 7 Complete - 100% Perfect Implementation**
 - ✅ **Advanced Storage** - PostgreSQL with full persistence + Memory Storage
 - ✅ **REST API** - Complete HTTP API with authentication + Analytics endpoints
 - ✅ **WebSocket Server** - Real-time metric updates
-- ✅ **Enhanced Oracle** - Integrated Analytics Engine with perfect TypeScript
-- ✅ **Performance Dashboard** - Multi-oracle monitoring
+- ✅ **Enhanced Witness** - Integrated Analytics Engine with perfect TypeScript
+- ✅ **Performance Dashboard** - Multi-witness monitoring
 - ✅ **Docker Support** - Complete containerization
 - ✅ **Security** - JWT authentication, rate limiting, CORS
 - ✅ **Documentation** - Swagger/OpenAPI integration
@@ -23,15 +23,15 @@ The **OpenTrust Protocol Oracle** is the revolutionary second pillar of the Open
 - ✅ **Perfect Testing** - 57/57 tests passing, zero TypeScript errors
 - ✅ **Production Ready** - 100% perfect implementation, no simplified functions
 
-### 🔮 **The First Pillar: Performance Oracle & Circle of Trust**
+### 🔮 **The First Pillar: Performance Witness & Circle of Trust**
 
-The Performance Oracle system introduces groundbreaking capabilities:
+The Performance Witness system introduces groundbreaking capabilities:
 
 - **🎯 Real-World Outcome Tracking**: Link OTP decisions to actual results
 - **📊 Performance Analytics**: Comprehensive metrics and calibration analysis
 - **🔄 Circle of Trust**: Continuous learning and improvement loop
-- **💰 Trading Oracle**: Financial outcome tracking with risk analysis
-- **🏥 Medical Oracle**: Healthcare outcome monitoring with safety alerts
+- **💰 Trading Witness**: Financial outcome tracking with risk analysis
+- **🏥 Medical Witness**: Healthcare outcome monitoring with safety alerts
 - **📈 Value of Indeterminacy (VoI)**: Measure the contribution of uncertainty to decisions
 
 ### 🧠 **v4.0.3 Features: Phase 7 Complete - 100% Perfect Implementation**
@@ -43,7 +43,7 @@ The Performance Oracle system introduces groundbreaking capabilities:
 - **📊 Storage Analytics**: Comprehensive storage statistics and monitoring
 
 #### **🌐 REST API & WebSocket Server**
-- **🔗 Complete HTTP API**: Full CRUD operations for oracles and outcomes
+- **🔗 Complete HTTP API**: Full CRUD operations for witnesss and outcomes
 - **🔐 JWT Authentication**: Enterprise-grade security
 - **⚡ Rate Limiting**: Protection against abuse and DDoS
 - **🌍 CORS Support**: Cross-origin resource sharing
@@ -54,7 +54,7 @@ The Performance Oracle system introduces groundbreaking capabilities:
 - **📏 Calibration Analysis**: Mathematical precision in confidence vs accuracy with bucket-based analysis
 - **🎯 Performance Grading**: Automatic A+ to D grading system with perfect TypeScript implementation
 - **🔮 VoI Calculations**: Advanced Value of Indeterminacy metrics with Pearson correlation
-- **📊 Multi-Oracle Dashboard**: Comprehensive monitoring interface
+- **📊 Multi-Witness Dashboard**: Comprehensive monitoring interface
 - **⏰ Real-time Metrics**: Live performance tracking
 - **🚨 Alert System**: Proactive monitoring and notifications
 - **🔍 Mapper Performance Evaluation**: Complete evaluation of different mapper types
@@ -78,10 +78,10 @@ The Performance Oracle system introduces groundbreaking capabilities:
 │  └─ 📚 Swagger/OpenAPI Documentation                          │
 │                                                                 │
 │  📊 ENHANCED ORACLE SYSTEM                                     │
-│  ├─ 🎯 Enhanced Oracle (Analytics Integration)                 │
-│  ├─ 💰 Trading Oracle (Financial Outcomes)                     │
-│  ├─ 🏥 Medical Oracle (Healthcare Outcomes)                    │
-│  └─ 📊 Performance Dashboard (Multi-Oracle Monitoring)         │
+│  ├─ 🎯 Enhanced Witness (Analytics Integration)                 │
+│  ├─ 💰 Trading Witness (Financial Outcomes)                     │
+│  ├─ 🏥 Medical Witness (Healthcare Outcomes)                    │
+│  └─ 📊 Performance Dashboard (Multi-Witness Monitoring)         │
 │                                                                 │
 │  🗄️ ADVANCED STORAGE LAYER                                    │
 │  ├─ 💾 Memory Storage (Development & Testing)                  │
@@ -113,35 +113,35 @@ The Performance Oracle system introduces groundbreaking capabilities:
 ### Installation
 
 ```bash
-npm install opentrustprotocol-oracle opentrustprotocol
+npm install opentrustprotocol-witness opentrustprotocol
 ```
 
 ### Basic Usage
 
-#### **Option 1: Simple Oracle (Development)**
+#### **Option 1: Simple Witness (Development)**
 ```typescript
 import {
-  createTradingOracle,
-  createMedicalOracle,
-  SimpleOracle
-} from 'opentrustprotocol-oracle';
+  createTradingWitness,
+  createMedicalWitness,
+  SimpleWitness
+} from 'opentrustprotocol-witness';
 
-// Create simple oracles for development
-const tradingOracle = createTradingOracle('my-trading-oracle');
-const medicalOracle = createMedicalOracle('my-medical-oracle');
+// Create simple witnesss for development
+const tradingWitness = createTradingWitness('my-trading-witness');
+const medicalWitness = createMedicalWitness('my-medical-witness');
 ```
 
-#### **Option 2: Enhanced Oracle System (Production)**
+#### **Option 2: Enhanced Witness System (Production)**
 ```typescript
 import {
-  OracleServer,
-  EnhancedOracle,
+  WitnessServer,
+  EnhancedWitness,
   PerformanceDashboard,
   PostgreSQLStorage
-} from 'opentrustprotocol-oracle';
+} from 'opentrustprotocol-witness';
 
 // Create production server with all features
-const server = new OracleServer({
+const server = new WitnessServer({
   api: {
     port: 3000,
     jwtSecret: 'your-secret-key'
@@ -149,9 +149,9 @@ const server = new OracleServer({
   postgres: {
     host: 'localhost',
     port: 5432,
-    database: 'oracle_db',
-    username: 'oracle_user',
-    password: 'oracle_password'
+    database: 'witness_db',
+    username: 'witness_user',
+    password: 'witness_password'
   }
 });
 
@@ -161,31 +161,31 @@ await server.start();
 #### **Option 3: REST API Client**
 ```typescript
 // Use the REST API from any application
-const response = await fetch('http://localhost:3000/api/oracles', {
+const response = await fetch('http://localhost:3000/api/witnesss', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer your-jwt-token',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    oracleId: 'my-oracle',
+    witnessId: 'my-witness',
     version: '4.0.0',
-    description: 'My Custom Oracle'
+    description: 'My Custom Witness'
   })
 });
 ```
 
-### Trading Oracle Example
+### Trading Witness Example
 
 ```typescript
-import { TradingOracle, TradingContext } from 'opentrustprotocol-oracle';
+import { TradingWitness, TradingContext } from 'opentrustprotocol-witness';
 import { NeutrosophicJudgment } from 'opentrustprotocol';
 
-// Create trading oracle
-const oracle = new TradingOracle({
-  oracleId: 'crypto-trading-oracle',
+// Create trading witness
+const witness = new TradingWitness({
+  witnessId: 'crypto-trading-witness',
   version: '1.0.0',
-  description: 'Cryptocurrency Trading Oracle'
+  description: 'Cryptocurrency Trading Witness'
 }, storage);
 
 // Record a successful trade
@@ -215,7 +215,7 @@ const tradeContext: TradingContext = {
   }
 };
 
-await oracle.recordSuccessfulTrade(
+await witness.recordSuccessfulTrade(
   originalDecision,
   tradeContext,
   500, // $500 profit
@@ -223,22 +223,22 @@ await oracle.recordSuccessfulTrade(
 );
 
 // Get performance metrics
-const performance = await oracle.getTradingPerformance();
+const performance = await witness.getTradingPerformance();
 console.log(`Win Rate: ${(performance.trading.winRate * 100).toFixed(1)}%`);
 console.log(`Total Profit: $${performance.trading.totalProfit.toFixed(2)}`);
 console.log(`Sharpe Ratio: ${performance.trading.sharpeRatio.toFixed(3)}`);
 ```
 
-### Medical Oracle Example
+### Medical Witness Example
 
 ```typescript
-import { MedicalOracle, MedicalContext } from 'opentrustprotocol-oracle';
+import { MedicalWitness, MedicalContext } from 'opentrustprotocol-witness';
 
-// Create medical oracle
-const oracle = new MedicalOracle({
-  oracleId: 'medical-treatment-oracle',
+// Create medical witness
+const witness = new MedicalWitness({
+  witnessId: 'medical-treatment-witness',
   version: '1.0.0',
-  description: 'Medical Treatment Oracle'
+  description: 'Medical Treatment Witness'
 }, storage);
 
 // Record successful treatment
@@ -254,7 +254,7 @@ const medicalContext: MedicalContext = {
   }
 };
 
-await oracle.recordSuccessfulTreatment(
+await witness.recordSuccessfulTreatment(
   originalDecision,
   medicalContext,
   14, // 14 days to recovery
@@ -262,7 +262,7 @@ await oracle.recordSuccessfulTreatment(
 );
 
 // Get safety alerts
-const alerts = oracle.getSafetyAlerts();
+const alerts = witness.getSafetyAlerts();
 if (alerts.length > 0) {
   console.log('⚠️ Safety Alert:', alerts[0].message);
 }
@@ -275,7 +275,7 @@ if (alerts.length > 0) {
 ### Calibration Analysis
 
 ```typescript
-import { OTPAnalyticsEngine } from 'opentrustprotocol-oracle';
+import { OTPAnalyticsEngine } from 'opentrustprotocol-witness';
 
 const analytics = new OTPAnalyticsEngine();
 
@@ -300,10 +300,10 @@ console.log(`Mapper Performance:`, mapperPerformance);
 
 ### **MLPredictiveEngine - Advanced AI Integration**
 
-The Oracle now includes a comprehensive Machine Learning engine for predictive analytics:
+The Witness now includes a comprehensive Machine Learning engine for predictive analytics:
 
 ```typescript
-import { MLPredictiveEngine } from 'opentrustprotocol-oracle';
+import { MLPredictiveEngine } from 'opentrustprotocol-witness';
 
 const mlEngine = new MLPredictiveEngine();
 
@@ -312,17 +312,17 @@ await mlEngine.trainModels(judgmentPairs);
 
 // Generate predictions
 const prediction = await mlEngine.generatePrediction(
-  oracleId,
+  witnessId,
   judgment,
   'success_probability',
   context
 );
 
 // Analyze trends
-const trends = await mlEngine.analyzeTrends(judgmentPairs, oracleId);
+const trends = await mlEngine.analyzeTrends(judgmentPairs, witnessId);
 
 // Generate alerts
-const alerts = await mlEngine.generateAlerts(judgmentPairs, oracleId);
+const alerts = await mlEngine.generateAlerts(judgmentPairs, witnessId);
 ```
 
 ### **ML Features:**
@@ -337,13 +337,13 @@ const alerts = await mlEngine.generateAlerts(judgmentPairs, oracleId);
 
 ```typescript
 // Get calibration metrics via REST API
-const calibrationResponse = await fetch('http://localhost:3000/api/metrics/calibration?oracleId=my-oracle', {
+const calibrationResponse = await fetch('http://localhost:3000/api/metrics/calibration?witnessId=my-witness', {
   headers: { 'Authorization': 'Bearer your-jwt-token' }
 });
 const calibration = await calibrationResponse.json();
 
 // Get VoI metrics
-const voiResponse = await fetch('http://localhost:3000/api/metrics/voi?oracleId=my-oracle', {
+const voiResponse = await fetch('http://localhost:3000/api/metrics/voi?witnessId=my-witness', {
   headers: { 'Authorization': 'Bearer your-jwt-token' }
 });
 const voi = await voiResponse.json();
@@ -362,7 +362,7 @@ const trainResponse = await fetch('http://localhost:3000/api/ml/train', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    oracleId: 'my-oracle',
+    witnessId: 'my-witness',
     timeRange: { start: '2024-01-01', end: '2024-12-31' }
   })
 });
@@ -376,7 +376,7 @@ const predictionResponse = await fetch('http://localhost:3000/api/ml/predict', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    oracleId: 'my-oracle',
+    witnessId: 'my-witness',
     judgment: { T: 0.8, I: 0.1, F: 0.1 },
     predictionType: 'success_probability',
     context: { pair: 'BTC/USDT' }
@@ -385,13 +385,13 @@ const predictionResponse = await fetch('http://localhost:3000/api/ml/predict', {
 const prediction = await predictionResponse.json();
 
 // Get trend analysis
-const trendsResponse = await fetch('http://localhost:3000/api/ml/trends/my-oracle?timeRange=2024-01-01,2024-12-31', {
+const trendsResponse = await fetch('http://localhost:3000/api/ml/trends/my-witness?timeRange=2024-01-01,2024-12-31', {
   headers: { 'Authorization': 'Bearer your-jwt-token' }
 });
 const trends = await trendsResponse.json();
 
 // Get predictive alerts
-const alertsResponse = await fetch('http://localhost:3000/api/ml/alerts/my-oracle', {
+const alertsResponse = await fetch('http://localhost:3000/api/ml/alerts/my-witness', {
   headers: { 'Authorization': 'Bearer your-jwt-token' }
 });
 const alerts = await alertsResponse.json();
@@ -414,10 +414,10 @@ The system provides automatic performance grading:
 ### Custom Validation Rules
 
 ```typescript
-import { PerformanceOracle } from 'opentrustprotocol-oracle';
+import { PerformanceWitness } from 'opentrustprotocol-witness';
 
-const oracle = new PerformanceOracle({
-  oracleId: 'custom-oracle',
+const witness = new PerformanceWitness({
+  witnessId: 'custom-witness',
   version: '1.0.0'
 }, storage, {
   minConfidenceThreshold: 0.3,
@@ -433,7 +433,7 @@ const oracle = new PerformanceOracle({
 ### Storage Configuration
 
 ```typescript
-import { MemoryStorage } from 'opentrustprotocol-oracle';
+import { MemoryStorage } from 'opentrustprotocol-witness';
 
 const storage = new MemoryStorage();
 
@@ -455,8 +455,8 @@ console.log(`Cleaned up ${cleanedCount} old pairs`);
 
 ```bash
 # Clone the repository
-git clone https://github.com/draxork/opentrustprotocol-oracle.git
-cd opentrustprotocol-oracle
+git clone https://github.com/draxork/opentrustprotocol-witness.git
+cd opentrustprotocol-witness
 
 # Start the complete system
 docker-compose up -d
@@ -472,7 +472,7 @@ docker-compose down
 
 ```bash
 # Build production image
-docker build -t opentrustprotocol-oracle:4.0.0 .
+docker build -t opentrustprotocol-witness:4.0.0 .
 
 # Run with production configuration
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -486,9 +486,9 @@ export API_PORT=3000
 export JWT_SECRET=your-secure-jwt-secret
 export POSTGRES_HOST=localhost
 export POSTGRES_PORT=5432
-export POSTGRES_DB=oracle_db
-export POSTGRES_USER=oracle_user
-export POSTGRES_PASSWORD=oracle_password
+export POSTGRES_DB=witness_db
+export POSTGRES_USER=witness_user
+export POSTGRES_PASSWORD=witness_password
 ```
 
 ---
@@ -506,21 +506,21 @@ curl -X POST http://localhost:3000/api/auth/login \
 
 # Use token in subsequent requests
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  http://localhost:3000/api/oracles
+  http://localhost:3000/api/witnesss
 ```
 
 ### Available Endpoints
 
-#### **Oracle Management**
-- `POST /api/oracles` - Create new oracle
-- `GET /api/oracles` - List all oracles
-- `GET /api/oracles/:id` - Get oracle details
-- `GET /api/oracles/:id/status` - Get oracle status
+#### **Witness Management**
+- `POST /api/witnesss` - Create new witness
+- `GET /api/witnesss` - List all witnesss
+- `GET /api/witnesss/:id` - Get witness details
+- `GET /api/witnesss/:id/status` - Get witness status
 
 #### **Outcome Recording**
-- `POST /api/oracles/:id/outcomes` - Record outcome
-- `GET /api/oracles/:id/outcomes` - Get oracle outcomes
-- `GET /api/oracles/:id/metrics` - Get performance metrics
+- `POST /api/witnesss/:id/outcomes` - Record outcome
+- `GET /api/witnesss/:id/outcomes` - Get witness outcomes
+- `GET /api/witnesss/:id/metrics` - Get performance metrics
 
 #### **Dashboard & Analytics**
 - `GET /api/dashboard/metrics` - Get dashboard metrics
@@ -531,7 +531,7 @@ curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 - `GET /api/metrics/calibration` - Get calibration metrics with bucket analysis
 - `GET /api/metrics/voi` - Get Value of Indeterminacy metrics with correlation
 - `GET /api/metrics/mapper/:mapperId` - Get performance metrics for specific mapper
-- `GET /api/metrics/performance/:oracleId` - Get comprehensive performance analysis
+- `GET /api/metrics/performance/:witnessId` - Get comprehensive performance analysis
 - `GET /api/metrics/mappers` - Get performance for all mappers
 
 #### **Storage Operations**
@@ -554,7 +554,7 @@ npm test
 npm run test -- --coverage
 
 # Run specific test file
-npm test -- oracle.test.ts
+npm test -- witness.test.ts
 ```
 
 ---
@@ -563,7 +563,7 @@ npm test -- oracle.test.ts
 
 ### Core Classes
 
-#### `OracleServer`
+#### `WitnessServer`
 Complete production server with REST API and WebSocket support.
 
 **Methods:**
@@ -571,28 +571,28 @@ Complete production server with REST API and WebSocket support.
 - `stop()`: Stop the server gracefully
 - `getStatus()`: Get server status
 
-#### `EnhancedOracle`
-Advanced oracle with integrated analytics engine.
+#### `EnhancedWitness`
+Advanced witness with integrated analytics engine.
 
 **Methods:**
 - `recordOutcome(decision, outcome, context?)`: Record an outcome
 - `getRealTimeMetrics()`: Get real-time performance metrics
-- `getOracleStatus()`: Get oracle status
+- `getWitnessStatus()`: Get witness status
 - `getPerformanceAnalysis()`: Get detailed performance analysis
-- `exportData()`: Export oracle data
+- `exportData()`: Export witness data
 
 #### `PerformanceDashboard`
-Multi-oracle monitoring and analytics dashboard.
+Multi-witness monitoring and analytics dashboard.
 
 **Methods:**
-- `registerOracle(oracle)`: Register an oracle for monitoring
+- `registerWitness(witness)`: Register an witness for monitoring
 - `startMonitoring(interval)`: Start real-time monitoring
 - `getCurrentMetrics()`: Get current dashboard metrics
 - `getPerformanceTrends()`: Get performance trends
 - `generateReport()`: Generate comprehensive report
 
-#### `TradingOracle`
-Specialized oracle for financial trading outcomes.
+#### `TradingWitness`
+Specialized witness for financial trading outcomes.
 
 **Methods:**
 - `recordTradingOutcome(originalJudgment, tradeContext, marketSnapshot?)`: Record trading outcome
@@ -600,8 +600,8 @@ Specialized oracle for financial trading outcomes.
 - `recordFailedTrade(originalJudgment, tradeContext, lossAmount, marketSnapshot?)`: Record failed trade
 - `getTradingPerformance(pair?)`: Get trading performance metrics
 
-#### `MedicalOracle`
-Specialized oracle for healthcare outcomes.
+#### `MedicalWitness`
+Specialized witness for healthcare outcomes.
 
 **Methods:**
 - `recordTreatmentOutcome(originalJudgment, medicalContext, outcomeDetails)`: Record treatment outcome
@@ -616,7 +616,7 @@ Production-ready database storage with full persistence.
 - `initialize()`: Initialize database connection
 - `savePair(pair)`: Save judgment pair to database
 - `getPair(judgmentId)`: Retrieve judgment pair
-- `getPairsByOracle(oracleId)`: Get all pairs for an oracle
+- `getPairsByWitness(witnessId)`: Get all pairs for an witness
 - `getStorageStats()`: Get storage statistics
 - `cleanup(olderThanMs)`: Clean up old data
 
@@ -626,7 +626,7 @@ High-performance in-memory storage for development.
 **Methods:**
 - `storePair(pair)`: Store judgment pair in memory
 - `getPair(judgmentId)`: Retrieve judgment pair
-- `getPairsByOracle(oracleId)`: Get all pairs for an oracle
+- `getPairsByWitness(witnessId)`: Get all pairs for an witness
 - `getStorageStats()`: Get storage statistics
 - `cleanup(olderThanMs)`: Clean up old data
 
@@ -636,7 +636,7 @@ Analytics engine for performance analysis.
 **Methods:**
 - `calculateCalibration(pairs)`: Calculate calibration metrics
 - `calculateVoI(pairs)`: Calculate VoI metrics
-- `analyzePerformance(oracleId, pairs)`: Comprehensive performance analysis
+- `analyzePerformance(witnessId, pairs)`: Comprehensive performance analysis
 - `calculateSuccessRate(pairs)`: Calculate success rate
 - `calculatePerformanceGrade(rate, calibration, voi)`: Calculate performance grade
 
@@ -690,7 +690,7 @@ interface MedicalContext {
 - Audit trails for all operations
 
 ### Validation
-- Input validation for all oracle operations
+- Input validation for all witness operations
 - Outcome verification before recording
 - Custom validation rules support
 - Error handling and logging
@@ -700,9 +700,9 @@ interface MedicalContext {
 ## 🚀 **Roadmap**
 
 ### ✅ **Phase 1 - Complete (v1.0.0)**
-- ✅ Performance Oracle base implementation
-- ✅ Trading Oracle with financial metrics
-- ✅ Medical Oracle with safety monitoring
+- ✅ Performance Witness base implementation
+- ✅ Trading Witness with financial metrics
+- ✅ Medical Witness with safety monitoring
 
 ### ✅ **Phase 2 - Complete (v2.0.0)**
 - ✅ Analytics Engine with calibration analysis
@@ -710,9 +710,9 @@ interface MedicalContext {
 - ✅ Advanced performance metrics
 
 ### ✅ **Phase 3 - Complete (v3.0.0)**
-- ✅ Enhanced Oracle with integrated analytics
+- ✅ Enhanced Witness with integrated analytics
 - ✅ Performance Dashboard implementation
-- ✅ Multi-oracle monitoring system
+- ✅ Multi-witness monitoring system
 
 ### ✅ **Phase 4 - Complete (v4.0.0)**
 - ✅ PostgreSQL Storage implementation
@@ -725,8 +725,8 @@ interface MedicalContext {
 - ✅ Advanced Storage & Persistence (PostgreSQL + Memory)
 - ✅ Complete REST API with JWT Authentication
 - ✅ WebSocket Server for Real-time Updates
-- ✅ Enhanced Oracle with Integrated Analytics
-- ✅ Performance Dashboard (Multi-oracle Monitoring)
+- ✅ Enhanced Witness with Integrated Analytics
+- ✅ Performance Dashboard (Multi-witness Monitoring)
 - ✅ Docker & Docker Compose Support
 - ✅ Security (JWT, Rate Limiting, CORS)
 - ✅ Swagger/OpenAPI Documentation
@@ -745,8 +745,8 @@ interface MedicalContext {
 - ✅ ML & Predictive Analytics REST API Endpoints
 
 ### 🔮 **Phase 8 (Future)**
-- 🔄 Distributed Oracle network
-- 🔄 Cross-oracle performance comparison
+- 🔄 Distributed Witness network
+- 🔄 Cross-witness performance comparison
 
 ---
 
@@ -758,7 +758,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ```bash
 # Clone the repository
-git clone https://github.com/draxork/opentrustprotocol-oracle.git
+git clone https://github.com/draxork/opentrustprotocol-witness.git
 
 # Install dependencies
 npm install
@@ -783,9 +783,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 **Links**
 
-- **GitHub Repository**: [https://github.com/draxork/opentrustprotocol-oracle](https://github.com/draxork/opentrustprotocol-oracle)
-- **NPM Package**: [https://www.npmjs.com/package/opentrustprotocol-oracle](https://www.npmjs.com/package/opentrustprotocol-oracle)
-- **Documentation**: [https://github.com/draxork/opentrustprotocol-oracle#readme](https://github.com/draxork/opentrustprotocol-oracle#readme)
+- **GitHub Repository**: [https://github.com/draxork/opentrustprotocol-witness](https://github.com/draxork/opentrustprotocol-witness)
+- **NPM Package**: [https://www.npmjs.com/package/opentrustprotocol-witness](https://www.npmjs.com/package/opentrustprotocol-witness)
+- **Documentation**: [https://github.com/draxork/opentrustprotocol-witness#readme](https://github.com/draxork/opentrustprotocol-witness#readme)
 - **OpenTrust Protocol**: [https://github.com/draxork/opentrustprotocol](https://github.com/draxork/opentrustprotocol)
 
 ---
@@ -800,10 +800,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 **Support**
 
-- **Issues**: [GitHub Issues](https://github.com/draxork/opentrustprotocol-oracle/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/draxork/opentrustprotocol-oracle/discussions)
+- **Issues**: [GitHub Issues](https://github.com/draxork/opentrustprotocol-witness/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/draxork/opentrustprotocol-witness/discussions)
 - **Email**: support@opentrustprotocol.com
 
 ---
 
-**🔮 The future of decision-making is here. Join the Circle of Trust with OpenTrust Protocol Oracle.**
+**🔮 The future of decision-making is here. Join the Circle of Trust with OpenTrust Protocol Witness.**

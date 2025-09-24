@@ -1,29 +1,29 @@
 /**
- * OpenTrust Protocol Oracle - Performance Dashboard
+ * OpenTrust Protocol Witness - Performance Dashboard
  * 
  * Real-time performance monitoring and visualization dashboard
- * for Oracle systems with analytics integration.
+ * for Witness systems with analytics integration.
  * 
  * @version 3.0.0
  * @author OpenTrust Protocol Team
  */
 
-import { EnhancedOracle } from '../oracle/EnhancedOracle';
-import { OracleConfig } from '../types/index';
+import { EnhancedWitness } from '../witness/EnhancedWitness';
+import { WitnessConfig } from '../types/index';
 
 export interface DashboardMetrics {
   timestamp: string;
-  oracles: OracleDashboardData[];
+  witnesss: WitnessDashboardData[];
   global_metrics: {
-    total_oracles: number;
+    total_witnesss: number;
     total_judgments: number;
     average_success_rate: number;
     system_health: 'excellent' | 'good' | 'fair' | 'poor';
   };
 }
 
-export interface OracleDashboardData {
-  oracle_id: string;
+export interface WitnessDashboardData {
+  witness_id: string;
   status: 'healthy' | 'warning' | 'critical';
   performance_grade: string;
   success_rate: number;
@@ -38,7 +38,7 @@ export interface OracleDashboardData {
 }
 
 export class PerformanceDashboard {
-  private oracles: Map<string, EnhancedOracle> = new Map();
+  private witnesss: Map<string, EnhancedWitness> = new Map();
   private updateInterval: NodeJS.Timeout | null = null;
   private metricsHistory: DashboardMetrics[] = [];
 
@@ -47,11 +47,11 @@ export class PerformanceDashboard {
   }
 
   /**
-   * Register an oracle with the dashboard
+   * Register an witness with the dashboard
    */
-  registerOracle(oracle: EnhancedOracle): void {
-    this.oracles.set(oracle['config'].oracleId, oracle);
-    console.log(`📊 Dashboard registered oracle: ${oracle['config'].oracleId}`);
+  registerWitness(witness: EnhancedWitness): void {
+    this.witnesss.set(witness['config'].witnessId, witness);
+    console.log(`📊 Dashboard registered witness: ${witness['config'].witnessId}`);
   }
 
   /**
@@ -88,13 +88,13 @@ export class PerformanceDashboard {
    * Get current dashboard metrics
    */
   async getCurrentMetrics(): Promise<DashboardMetrics> {
-    const oracles = Array.from(this.oracles.values());
-    const oracleData: OracleDashboardData[] = [];
+    const witnesss = Array.from(this.witnesss.values());
+    const witnessData: WitnessDashboardData[] = [];
 
-    for (const oracle of oracles) {
+    for (const witness of witnesss) {
       try {
-        const status = await oracle.getOracleStatus();
-        const realTimeMetrics = await oracle.getRealTimeMetrics();
+        const status = await witness.getWitnessStatus();
+        const realTimeMetrics = await witness.getRealTimeMetrics();
 
         // Calculate trends (simplified)
         const trends = {
@@ -116,8 +116,8 @@ export class PerformanceDashboard {
           alerts.push('Poor calibration quality');
         }
 
-        oracleData.push({
-          oracle_id: status.oracle_id,
+        witnessData.push({
+          witness_id: status.witness_id,
           status: status.status,
           performance_grade: realTimeMetrics.performance_grade,
           success_rate: realTimeMetrics.success_rate,
@@ -127,30 +127,30 @@ export class PerformanceDashboard {
           alerts
         });
       } catch (error: any) {
-        console.warn(`Failed to get metrics for oracle: ${error.message}`);
+        console.warn(`Failed to get metrics for witness: ${error.message}`);
       }
     }
 
     // Calculate global metrics
-    const totalJudgments = oracleData.reduce((sum, oracle) => sum + oracle.total_judgments, 0);
-    const averageSuccessRate = oracleData.length > 0 
-      ? oracleData.reduce((sum, oracle) => sum + oracle.success_rate, 0) / oracleData.length 
+    const totalJudgments = witnessData.reduce((sum, witness) => sum + witness.total_judgments, 0);
+    const averageSuccessRate = witnessData.length > 0 
+      ? witnessData.reduce((sum, witness) => sum + witness.success_rate, 0) / witnessData.length 
       : 0;
 
     // Determine system health
     let systemHealth: 'excellent' | 'good' | 'fair' | 'poor' = 'excellent';
-    const criticalOracles = oracleData.filter(o => o.status === 'critical').length;
-    const warningOracles = oracleData.filter(o => o.status === 'warning').length;
+    const criticalWitnesss = witnessData.filter(o => o.status === 'critical').length;
+    const warningWitnesss = witnessData.filter(o => o.status === 'warning').length;
     
-    if (criticalOracles > 0) systemHealth = 'poor';
-    else if (warningOracles > oracleData.length * 0.3) systemHealth = 'fair';
+    if (criticalWitnesss > 0) systemHealth = 'poor';
+    else if (warningWitnesss > witnessData.length * 0.3) systemHealth = 'fair';
     else if (averageSuccessRate < 0.8) systemHealth = 'good';
 
     const metrics: DashboardMetrics = {
       timestamp: new Date().toISOString(),
-      oracles: oracleData,
+      witnesss: witnessData,
       global_metrics: {
-        total_oracles: oracleData.length,
+        total_witnesss: witnessData.length,
         total_judgments: totalJudgments,
         average_success_rate: averageSuccessRate,
         system_health: systemHealth
@@ -180,7 +180,7 @@ export class PerformanceDashboard {
     timestamps: string[];
     success_rates: number[];
     total_judgments: number[];
-    oracle_count: number[];
+    witness_count: number[];
   } {
     const history = this.getMetricsHistory();
     
@@ -188,7 +188,7 @@ export class PerformanceDashboard {
       timestamps: history.map(m => m.timestamp),
       success_rates: history.map(m => m.global_metrics.average_success_rate),
       total_judgments: history.map(m => m.global_metrics.total_judgments),
-      oracle_count: history.map(m => m.global_metrics.total_oracles)
+      witness_count: history.map(m => m.global_metrics.total_witnesss)
     };
     
     return trends;
@@ -210,25 +210,25 @@ export class PerformanceDashboard {
     const detailedAnalysis = [];
     const recommendations: string[] = [];
 
-    // Analyze each oracle
-    for (const oracle of currentMetrics.oracles) {
+    // Analyze each witness
+    for (const witness of currentMetrics.witnesss) {
       const analysis: any = {
-        oracle_id: oracle.oracle_id,
-        status: oracle.status,
-        performance_grade: oracle.performance_grade,
-        success_rate: oracle.success_rate,
-        alerts: oracle.alerts
+        witness_id: witness.witness_id,
+        status: witness.status,
+        performance_grade: witness.performance_grade,
+        success_rate: witness.success_rate,
+        alerts: witness.alerts
       };
 
       // Generate recommendations
-      if (oracle.status === 'critical') {
-        recommendations.push(`Immediate attention required for oracle ${oracle.oracle_id}`);
+      if (witness.status === 'critical') {
+        recommendations.push(`Immediate attention required for witness ${witness.witness_id}`);
       }
-      if (oracle.success_rate < 0.6) {
-        recommendations.push(`Review decision logic for oracle ${oracle.oracle_id}`);
+      if (witness.success_rate < 0.6) {
+        recommendations.push(`Review decision logic for witness ${witness.witness_id}`);
       }
-      if (oracle.alerts.length > 0) {
-        recommendations.push(`Address alerts for oracle ${oracle.oracle_id}: ${oracle.alerts.join(', ')}`);
+      if (witness.alerts.length > 0) {
+        recommendations.push(`Address alerts for witness ${witness.witness_id}: ${witness.alerts.join(', ')}`);
       }
 
       detailedAnalysis.push(analysis);
@@ -239,7 +239,7 @@ export class PerformanceDashboard {
       recommendations.push('System-wide performance review recommended');
     }
     if (currentMetrics.global_metrics.average_success_rate < 0.7) {
-      recommendations.push('Consider updating oracle configurations or training data');
+      recommendations.push('Consider updating witness configurations or training data');
     }
 
     return {
@@ -258,16 +258,16 @@ export class PerformanceDashboard {
     current_metrics: DashboardMetrics;
     metrics_history: DashboardMetrics[];
     trends: any;
-    oracles_config: any[];
+    witnesss_config: any[];
   }> {
     const currentMetrics = await this.getCurrentMetrics();
     const history = this.getMetricsHistory();
     const trends = this.getPerformanceTrends();
     
-    const oraclesConfig = Array.from(this.oracles.values()).map(oracle => ({
-      oracle_id: oracle['config'].oracleId,
-      version: oracle['config'].version,
-      description: oracle['config'].description
+    const witnesssConfig = Array.from(this.witnesss.values()).map(witness => ({
+      witness_id: witness['config'].witnessId,
+      version: witness['config'].version,
+      description: witness['config'].description
     }));
 
     return {
@@ -275,21 +275,21 @@ export class PerformanceDashboard {
       current_metrics: currentMetrics,
       metrics_history: history,
       trends,
-      oracles_config: oraclesConfig
+      witnesss_config: witnesssConfig
     };
   }
 
   /**
-   * Create a simple oracle for testing
+   * Create a simple witness for testing
    */
-  static createTestOracle(oracleId: string, description?: string): EnhancedOracle {
-    const config: OracleConfig = {
-      oracleId,
+  static createTestWitness(witnessId: string, description?: string): EnhancedWitness {
+    const config: WitnessConfig = {
+      witnessId,
       version: '3.0.0',
-      description: description || `Test Oracle: ${oracleId}`
+      description: description || `Test Witness: ${witnessId}`
     };
 
-    return new EnhancedOracle(config);
+    return new EnhancedWitness(config);
   }
 
   private async updateMetrics(): Promise<void> {
@@ -298,7 +298,7 @@ export class PerformanceDashboard {
     const metrics = await this.getCurrentMetrics();
     
     // Log summary for monitoring
-    console.log(`📊 Dashboard Update: ${metrics.global_metrics.total_oracles} oracles, ` +
+    console.log(`📊 Dashboard Update: ${metrics.global_metrics.total_witnesss} witnesss, ` +
                `${metrics.global_metrics.total_judgments} judgments, ` +
                `${(metrics.global_metrics.average_success_rate * 100).toFixed(1)}% success rate`);
   }
