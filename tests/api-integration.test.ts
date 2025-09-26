@@ -132,25 +132,25 @@ describe('Witness API Integration Tests', () => {
   describe('Authentication', () => {
     it('should require authentication for protected endpoints', async () => {
       await request(apiServer['app'])
-        .get('/api/witnesss')
+        .get('/api/witnesses')
         .expect(401);
     });
 
     it('should accept valid JWT token', async () => {
       const response = await request(apiServer['app'])
-        .get('/api/witnesss')
+        .get('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({
-        witnesss: expect.any(Array),
+        witnesses: expect.any(Array),
         total: expect.any(Number)
       });
     });
 
     it('should reject invalid JWT token', async () => {
       await request(apiServer['app'])
-        .get('/api/witnesss')
+        .get('/api/witnesses')
         .set('Authorization', 'Bearer invalid-token')
         .expect(403);
     });
@@ -165,7 +165,7 @@ describe('Witness API Integration Tests', () => {
       };
 
       const response = await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig)
         .expect(201);
@@ -184,7 +184,7 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(invalidConfig)
         .expect(400);
@@ -199,20 +199,20 @@ describe('Witness API Integration Tests', () => {
 
       // Create first witness
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig)
         .expect(201);
 
       // Try to create duplicate
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig)
         .expect(409);
     });
 
-    it('should list created witnesss', async () => {
+    it('should list created witnesses', async () => {
       // Create a test witness
       const witnessConfig = {
         witnessId: 'test-witness-4',
@@ -221,19 +221,19 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig)
         .expect(201);
 
-      // List witnesss
+      // List witnesses
       const response = await request(apiServer['app'])
-        .get('/api/witnesss')
+        .get('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
-      expect(response.body.witnesss).toHaveLength(1);
-      expect(response.body.witnesss[0]).toMatchObject({
+      expect(response.body.witnesses).toHaveLength(1);
+      expect(response.body.witnesses[0]).toMatchObject({
         witnessId: witnessConfig.witnessId,
         registered: true
       });
@@ -248,14 +248,14 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig)
         .expect(201);
 
       // Get witness status
       const response = await request(apiServer['app'])
-        .get(`/api/witnesss/${witnessConfig.witnessId}`)
+        .get(`/api/witnesses/${witnessConfig.witnessId}`)
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
@@ -272,7 +272,7 @@ describe('Witness API Integration Tests', () => {
 
     it('should return 404 for non-existent witness', async () => {
       await request(apiServer['app'])
-        .get('/api/witnesss/non-existent-witness')
+        .get('/api/witnesses/non-existent-witness')
         .set('Authorization', `Bearer ${testToken}`)
         .expect(404);
     });
@@ -290,7 +290,7 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .send(witnessConfig);
 
@@ -319,7 +319,7 @@ describe('Witness API Integration Tests', () => {
       };
 
       const response = await request(apiServer['app'])
-        .post(`/api/witnesss/${witnessId}/outcomes`)
+        .post(`/api/witnesses/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(outcomeData)
         .expect(201);
@@ -345,7 +345,7 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post(`/api/witnesss/${witnessId}/outcomes`)
+        .post(`/api/witnesses/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(invalidOutcomeData)
         .expect(400);
@@ -373,13 +373,13 @@ describe('Witness API Integration Tests', () => {
       };
 
       await request(apiServer['app'])
-        .post(`/api/witnesss/${witnessId}/outcomes`)
+        .post(`/api/witnesses/${witnessId}/outcomes`)
         .set('Authorization', `Bearer ${testToken}`)
         .send(outcomeData);
 
       // Get metrics
       const response = await request(apiServer['app'])
-        .get(`/api/witnesss/${witnessId}/metrics`)
+        .get(`/api/witnesses/${witnessId}/metrics`)
         .set('Authorization', `Bearer ${testToken}`)
         .expect(200);
 
@@ -404,9 +404,9 @@ describe('Witness API Integration Tests', () => {
 
       expect(response.body).toMatchObject({
         timestamp: expect.any(String),
-        witnesss: expect.any(Array),
+        witnesses: expect.any(Array),
         global_metrics: expect.objectContaining({
-          total_witnesss: expect.any(Number),
+          total_witnesses: expect.any(Number),
           total_judgments: expect.any(Number),
           average_success_rate: expect.any(Number),
           system_health: expect.stringMatching(/^(excellent|good|fair|poor)$/)
@@ -489,7 +489,7 @@ describe('Witness API Integration Tests', () => {
       // Make multiple requests quickly to test rate limiting
       const promises = Array(10).fill(null).map(() =>
         request(apiServer['app'])
-          .get('/api/witnesss')
+          .get('/api/witnesses')
           .set('Authorization', `Bearer ${testToken}`)
       );
 
@@ -505,7 +505,7 @@ describe('Witness API Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle malformed JSON requests', async () => {
       await request(apiServer['app'])
-        .post('/api/witnesss')
+        .post('/api/witnesses')
         .set('Authorization', `Bearer ${testToken}`)
         .set('Content-Type', 'application/json')
         .send('invalid json')
@@ -536,9 +536,9 @@ describe('WebSocket Integration Tests', () => {
     const mockDashboard = {
       getCurrentMetrics: jest.fn().mockResolvedValue({
         timestamp: new Date().toISOString(),
-        witnesss: [],
+        witnesses: [],
         global_metrics: {
-          total_witnesss: 0,
+          total_witnesses: 0,
           total_judgments: 0,
           average_success_rate: 0,
           system_health: 'excellent'

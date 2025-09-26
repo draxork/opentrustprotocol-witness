@@ -32,7 +32,7 @@ export class WitnessServer {
     this.wsServer = new WitnessWebSocketServer(
       config.websocket,
       (this.apiServer as any).dashboard,
-      (this.apiServer as any).witnesss
+      (this.apiServer as any).witnesses
     );
   }
 

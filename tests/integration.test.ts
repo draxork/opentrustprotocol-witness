@@ -212,7 +212,7 @@ describe('Performance Dashboard Integration Tests', () => {
   });
 
   describe('Dashboard Functionality', () => {
-    it('should register witnesss', () => {
+    it('should register witnesses', () => {
       dashboard.registerWitness(witness1);
       dashboard.registerWitness(witness2);
       
@@ -228,9 +228,9 @@ describe('Performance Dashboard Integration Tests', () => {
       
       expect(metrics).toBeDefined();
       expect(metrics.timestamp).toBeDefined();
-      expect(Array.isArray(metrics.witnesss)).toBe(true);
+      expect(Array.isArray(metrics.witnesses)).toBe(true);
       expect(metrics.global_metrics).toBeDefined();
-      expect(metrics.global_metrics.total_witnesss).toBe(2);
+      expect(metrics.global_metrics.total_witnesses).toBe(2);
     });
 
     it('should get metrics history', () => {
@@ -272,7 +272,7 @@ describe('Performance Dashboard Integration Tests', () => {
       expect(exportData.current_metrics).toBeDefined();
       expect(Array.isArray(exportData.metrics_history)).toBe(true);
       expect(exportData.trends).toBeDefined();
-      expect(Array.isArray(exportData.witnesss_config)).toBe(true);
+      expect(Array.isArray(exportData.witnesses_config)).toBe(true);
     });
 
     it('should create test witness', () => {
@@ -295,12 +295,12 @@ describe('Performance Dashboard Integration Tests', () => {
   });
 
   describe('End-to-End Integration', () => {
-    it('should work with multiple witnesss and dashboard', async () => {
-      // Register witnesss with dashboard
+    it('should work with multiple witnesses and dashboard', async () => {
+      // Register witnesses with dashboard
       dashboard.registerWitness(witness1);
       dashboard.registerWitness(witness2);
 
-      // Record outcomes in both witnesss
+      // Record outcomes in both witnesses
       const decision1: NeutrosophicJudgment = {
         judgment_id: 'integration-decision-1',
         T: 0.9,
@@ -354,12 +354,12 @@ describe('Performance Dashboard Integration Tests', () => {
       // Get dashboard metrics
       const metrics = await dashboard.getCurrentMetrics();
       
-      expect(metrics.global_metrics.total_witnesss).toBe(2);
-      expect(metrics.witnesss).toHaveLength(2);
+      expect(metrics.global_metrics.total_witnesses).toBe(2);
+      expect(metrics.witnesses).toHaveLength(2);
       
       // Verify individual witness metrics
-      const witness1Data = metrics.witnesss.find(o => o.witness_id === 'dashboard-witness-1');
-      const witness2Data = metrics.witnesss.find(o => o.witness_id === 'dashboard-witness-2');
+      const witness1Data = metrics.witnesses.find(o => o.witness_id === 'dashboard-witness-1');
+      const witness2Data = metrics.witnesses.find(o => o.witness_id === 'dashboard-witness-2');
       
       expect(witness1Data).toBeDefined();
       expect(witness2Data).toBeDefined();

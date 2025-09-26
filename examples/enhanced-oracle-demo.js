@@ -19,7 +19,7 @@ async function enhancedWitnessDemo() {
   const dashboard = new PerformanceDashboard();
   const storage = new MemoryStorage();
 
-  // Create enhanced witnesss
+  // Create enhanced witnesses
   const tradingWitness = new EnhancedWitness({
     witnessId: 'enhanced-trading-witness',
     version: '3.0.0',
@@ -32,7 +32,7 @@ async function enhancedWitnessDemo() {
     description: 'Enhanced Medical Witness with Analytics'
   }, storage);
 
-  // Register witnesss with dashboard
+  // Register witnesses with dashboard
   dashboard.registerWitness(tradingWitness);
   dashboard.registerWitness(medicalWitness);
 
@@ -173,13 +173,13 @@ async function enhancedWitnessDemo() {
   const dashboardMetrics = await dashboard.getCurrentMetrics();
   console.log('📈 Global Dashboard Metrics:');
   console.log(`   • Timestamp: ${dashboardMetrics.timestamp}`);
-  console.log(`   • Total Witnesss: ${dashboardMetrics.global_metrics.total_witnesss}`);
+  console.log(`   • Total Witnesss: ${dashboardMetrics.global_metrics.total_witnesses}`);
   console.log(`   • Total Judgments: ${dashboardMetrics.global_metrics.total_judgments}`);
   console.log(`   • Average Success Rate: ${(dashboardMetrics.global_metrics.average_success_rate * 100).toFixed(1)}%`);
   console.log(`   • System Health: ${dashboardMetrics.global_metrics.system_health}\n`);
 
   console.log('🔍 Individual Witness Dashboard Data:');
-  for (const witness of dashboardMetrics.witnesss) {
+  for (const witness of dashboardMetrics.witnesses) {
     console.log(`   📊 ${witness.witness_id}:`);
     console.log(`     - Status: ${witness.status}`);
     console.log(`     - Performance Grade: ${witness.performance_grade}`);
@@ -200,7 +200,7 @@ async function enhancedWitnessDemo() {
   console.log('📊 Performance Report:');
   console.log(`   • Report Timestamp: ${report.report_timestamp}`);
   console.log(`   • System Health: ${report.summary.global_metrics.system_health}`);
-  console.log(`   • Total Witnesss: ${report.summary.global_metrics.total_witnesss}`);
+  console.log(`   • Total Witnesss: ${report.summary.global_metrics.total_witnesses}`);
   console.log(`   • Total Judgments: ${report.summary.global_metrics.total_judgments}`);
   console.log(`   • Average Success Rate: ${(report.summary.global_metrics.average_success_rate * 100).toFixed(1)}%\n`);
 
@@ -236,7 +236,7 @@ async function enhancedWitnessDemo() {
   console.log(`   • Current Metrics: Available`);
   console.log(`   • Metrics History: ${dashboardExport.metrics_history.length} entries`);
   console.log(`   • Trends Data: Available`);
-  console.log(`   • Witnesss Config: ${dashboardExport.witnesss_config.length} witnesss`);
+  console.log(`   • Witnesss Config: ${dashboardExport.witnesses_config.length} witnesses`);
   console.log(`   • Export Timestamp: ${dashboardExport.export_timestamp}\n`);
 
   console.log('🎉 Enhanced Witness System Demo Completed Successfully!');

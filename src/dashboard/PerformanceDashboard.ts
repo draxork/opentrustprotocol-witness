@@ -13,9 +13,9 @@ import { WitnessConfig } from '../types/index';
 
 export interface DashboardMetrics {
   timestamp: string;
-  witnesss: WitnessDashboardData[];
+  witnesses: WitnessDashboardData[];
   global_metrics: {
-    total_witnesss: number;
+    total_witnesses: number;
     total_judgments: number;
     average_success_rate: number;
     system_health: 'excellent' | 'good' | 'fair' | 'poor';
@@ -38,7 +38,7 @@ export interface WitnessDashboardData {
 }
 
 export class PerformanceDashboard {
-  private witnesss: Map<string, EnhancedWitness> = new Map();
+  private witnesses: Map<string, EnhancedWitness> = new Map();
   private updateInterval: NodeJS.Timeout | null = null;
   private metricsHistory: DashboardMetrics[] = [];
 
@@ -50,7 +50,7 @@ export class PerformanceDashboard {
    * Register an witness with the dashboard
    */
   registerWitness(witness: EnhancedWitness): void {
-    this.witnesss.set(witness['config'].witnessId, witness);
+    this.witnesses.set(witness['config'].witnessId, witness);
     console.log(`📊 Dashboard registered witness: ${witness['config'].witnessId}`);
   }
 
@@ -88,10 +88,10 @@ export class PerformanceDashboard {
    * Get current dashboard metrics
    */
   async getCurrentMetrics(): Promise<DashboardMetrics> {
-    const witnesss = Array.from(this.witnesss.values());
+    const witnesses = Array.from(this.witnesses.values());
     const witnessData: WitnessDashboardData[] = [];
 
-    for (const witness of witnesss) {
+    for (const witness of witnesses) {
       try {
         const status = await witness.getWitnessStatus();
         const realTimeMetrics = await witness.getRealTimeMetrics();
@@ -148,9 +148,9 @@ export class PerformanceDashboard {
 
     const metrics: DashboardMetrics = {
       timestamp: new Date().toISOString(),
-      witnesss: witnessData,
+      witnesses: witnessData,
       global_metrics: {
-        total_witnesss: witnessData.length,
+        total_witnesses: witnessData.length,
         total_judgments: totalJudgments,
         average_success_rate: averageSuccessRate,
         system_health: systemHealth
@@ -188,7 +188,7 @@ export class PerformanceDashboard {
       timestamps: history.map(m => m.timestamp),
       success_rates: history.map(m => m.global_metrics.average_success_rate),
       total_judgments: history.map(m => m.global_metrics.total_judgments),
-      witness_count: history.map(m => m.global_metrics.total_witnesss)
+      witness_count: history.map(m => m.global_metrics.total_witnesses)
     };
     
     return trends;
@@ -211,7 +211,7 @@ export class PerformanceDashboard {
     const recommendations: string[] = [];
 
     // Analyze each witness
-    for (const witness of currentMetrics.witnesss) {
+    for (const witness of currentMetrics.witnesses) {
       const analysis: any = {
         witness_id: witness.witness_id,
         status: witness.status,
@@ -258,13 +258,13 @@ export class PerformanceDashboard {
     current_metrics: DashboardMetrics;
     metrics_history: DashboardMetrics[];
     trends: any;
-    witnesss_config: any[];
+    witnesses_config: any[];
   }> {
     const currentMetrics = await this.getCurrentMetrics();
     const history = this.getMetricsHistory();
     const trends = this.getPerformanceTrends();
     
-    const witnesssConfig = Array.from(this.witnesss.values()).map(witness => ({
+    const witnessesConfig = Array.from(this.witnesses.values()).map(witness => ({
       witness_id: witness['config'].witnessId,
       version: witness['config'].version,
       description: witness['config'].description
@@ -275,7 +275,7 @@ export class PerformanceDashboard {
       current_metrics: currentMetrics,
       metrics_history: history,
       trends,
-      witnesss_config: witnesssConfig
+      witnesses_config: witnessesConfig
     };
   }
 
@@ -298,7 +298,7 @@ export class PerformanceDashboard {
     const metrics = await this.getCurrentMetrics();
     
     // Log summary for monitoring
-    console.log(`📊 Dashboard Update: ${metrics.global_metrics.total_witnesss} witnesss, ` +
+    console.log(`📊 Dashboard Update: ${metrics.global_metrics.total_witnesses} witnesses, ` +
                `${metrics.global_metrics.total_judgments} judgments, ` +
                `${(metrics.global_metrics.average_success_rate * 100).toFixed(1)}% success rate`);
   }

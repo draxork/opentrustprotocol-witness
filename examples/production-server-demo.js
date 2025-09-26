@@ -80,10 +80,10 @@ async function productionServerDemo() {
     console.log('\n📚 Available API Endpoints:');
     console.log('   • GET  /health - Health check');
     console.log('   • GET  /api-docs - API documentation');
-    console.log('   • POST /api/witnesss - Create Witness');
-    console.log('   • GET  /api/witnesss - List Witnesss');
-    console.log('   • GET  /api/witnesss/:id/metrics - Get Witness metrics');
-    console.log('   • POST /api/witnesss/:id/outcomes - Record outcome');
+    console.log('   • POST /api/witnesses - Create Witness');
+    console.log('   • GET  /api/witnesses - List Witnesss');
+    console.log('   • GET  /api/witnesses/:id/metrics - Get Witness metrics');
+    console.log('   • POST /api/witnesses/:id/outcomes - Record outcome');
     console.log('   • GET  /api/dashboard/metrics - Dashboard metrics');
     console.log('   • GET  /api/storage/stats - Storage statistics');
 

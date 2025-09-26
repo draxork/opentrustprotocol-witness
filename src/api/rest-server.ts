@@ -46,7 +46,7 @@ export class WitnessAPIServer {
   private dashboard: PerformanceDashboard;
   private analytics: OTPAnalyticsEngine;
   private mlEngine: MLPredictiveEngine;
-  private witnesss: Map<string, EnhancedWitness> = new Map();
+  private witnesses: Map<string, EnhancedWitness> = new Map();
   private server: any;
 
   constructor(config: APIConfig) {
@@ -156,7 +156,7 @@ export class WitnessAPIServer {
     const router = express.Router();
 
     // Create Witness
-    router.post('/witnesss', this.authenticateToken, async (req, res) => {
+    router.post('/witnesses', this.authenticateToken, async (req, res) => {
       try {
         const config: WitnessConfig = req.body;
         
@@ -167,7 +167,7 @@ export class WitnessAPIServer {
           return;
         }
 
-        if (this.witnesss.has(config.witnessId)) {
+        if (this.witnesses.has(config.witnessId)) {
           res.status(409).json({
             error: `Witness with ID '${config.witnessId}' already exists`
           });
@@ -175,7 +175,7 @@ export class WitnessAPIServer {
         }
 
         const witness = new EnhancedWitness(config, this.storage);
-        this.witnesss.set(config.witnessId, witness);
+        this.witnesses.set(config.witnessId, witness);
         this.dashboard.registerWitness(witness);
 
         res.status(201).json({
@@ -189,10 +189,10 @@ export class WitnessAPIServer {
     });
 
     // Get Witness
-    router.get('/witnesss/:witnessId', this.authenticateToken, async (req, res) => {
+    router.get('/witnesses/:witnessId', this.authenticateToken, async (req, res) => {
       try {
         const witnessId = req.params['witnessId'];
-        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
+        const witness = witnessId ? this.witnesses.get(witnessId) : undefined;
 
         if (!witness) {
           res.status(404).json({
@@ -209,16 +209,16 @@ export class WitnessAPIServer {
     });
 
     // List Witnesss
-    router.get('/witnesss', this.authenticateToken, async (_req, res) => {
+    router.get('/witnesses', this.authenticateToken, async (_req, res) => {
       try {
-        const witnesssList = Array.from(this.witnesss.keys()).map(witnessId => ({
+        const witnessesList = Array.from(this.witnesses.keys()).map(witnessId => ({
           witnessId,
           registered: true
         }));
 
         res.json({
-          witnesss: witnesssList,
-          total: witnesssList.length
+          witnesses: witnessesList,
+          total: witnessesList.length
         });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -226,12 +226,12 @@ export class WitnessAPIServer {
     });
 
     // Record Outcome
-    router.post('/witnesss/:witnessId/outcomes', this.authenticateToken, async (req, res) => {
+    router.post('/witnesses/:witnessId/outcomes', this.authenticateToken, async (req, res) => {
       try {
         const witnessId = req.params['witnessId'];
         const { decision, outcome, context } = req.body;
 
-        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
+        const witness = witnessId ? this.witnesses.get(witnessId) : undefined;
         if (!witness) {
           res.status(404).json({
             error: `Witness '${witnessId}' not found`
@@ -261,10 +261,10 @@ export class WitnessAPIServer {
     });
 
     // Get Witness Metrics
-    router.get('/witnesss/:witnessId/metrics', this.authenticateToken, async (req, res) => {
+    router.get('/witnesses/:witnessId/metrics', this.authenticateToken, async (req, res) => {
       try {
         const witnessId = req.params['witnessId'];
-        const witness = witnessId ? this.witnesss.get(witnessId) : undefined;
+        const witness = witnessId ? this.witnesses.get(witnessId) : undefined;
 
         if (!witness) {
           res.status(404).json({
@@ -574,9 +574,9 @@ export class WitnessAPIServer {
             total: alerts.length
           });
         } else {
-          // Get alerts for all witnesss
+          // Get alerts for all witnesses
           const allAlerts = Array.from(this.mlEngine.getAlerts('')).concat(
-            ...Array.from(this.witnesss.keys()).map(id => this.mlEngine.getAlerts(id))
+            ...Array.from(this.witnesses.keys()).map(id => this.mlEngine.getAlerts(id))
           );
           
           res.json({

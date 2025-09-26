@@ -31,15 +31,15 @@ export class WitnessWebSocketServer {
   private wss: WebSocketServer;
   private config: WebSocketConfig;
   private dashboard: PerformanceDashboard;
-  private witnesss: Map<string, EnhancedWitness>;
+  private witnesses: Map<string, EnhancedWitness>;
   private clients: Set<AuthenticatedWebSocket> = new Set();
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private metricsBroadcastInterval: NodeJS.Timeout | null = null;
 
-  constructor(config: WebSocketConfig, dashboard: PerformanceDashboard, witnesss: Map<string, EnhancedWitness>) {
+  constructor(config: WebSocketConfig, dashboard: PerformanceDashboard, witnesses: Map<string, EnhancedWitness>) {
     this.config = config;
     this.dashboard = dashboard;
-    this.witnesss = witnesss;
+    this.witnesses = witnesses;
     this.wss = new WebSocketServer({ port: config.port });
     
     this.setupWebSocketServer();
@@ -241,7 +241,7 @@ export class WitnessWebSocketServer {
 
   private async sendWitnessMetrics(ws: AuthenticatedWebSocket, witnessId: string): Promise<void> {
     try {
-      const witness = this.witnesss.get(witnessId);
+      const witness = this.witnesses.get(witnessId);
       if (!witness) {
         this.sendError(ws, `Witness '${witnessId}' not found`);
         return;
@@ -261,7 +261,7 @@ export class WitnessWebSocketServer {
 
   private async sendWitnessAnalysis(ws: AuthenticatedWebSocket, witnessId: string): Promise<void> {
     try {
-      const witness = this.witnesss.get(witnessId);
+      const witness = this.witnesses.get(witnessId);
       if (!witness) {
         this.sendError(ws, `Witness '${witnessId}' not found`);
         return;
@@ -283,7 +283,7 @@ export class WitnessWebSocketServer {
     try {
       const allMetrics = {};
       
-      for (const [witnessId, witness] of this.witnesss) {
+      for (const [witnessId, witness] of this.witnesses) {
         try {
           const metrics = await witness.getRealTimeMetrics();
           (allMetrics as any)[witnessId] = metrics;
@@ -332,7 +332,7 @@ export class WitnessWebSocketServer {
         });
 
         // Broadcast individual witness metrics
-        for (const [witnessId, witness] of this.witnesss) {
+        for (const [witnessId, witness] of this.witnesses) {
           try {
             const witnessMetrics = await witness.getRealTimeMetrics();
             
