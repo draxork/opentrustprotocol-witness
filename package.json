@@ -1,6 +1,6 @@
 {
   "name": "opentrustprotocol-witness",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Performance Witness & Analytics Engine for OpenTrust Protocol - Real-world outcome tracking and performance measurement",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
